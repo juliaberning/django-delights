@@ -1,14 +1,59 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+
 from .models import Ingredient
 from .forms import IngredientForm
 
 def home(request):
     return render(request, 'restaurant/home.html')
 
+def loginPage(request):
+    if request.user.is_authenticated:
+            return redirect('home')
+
+    if request.method == 'POST':
+        username = request.POST.get('username').lower()
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Welcome back, {user.username}!")
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid username or password. Please try again.')
+    return render(request, 'restaurant/login_register.html', {'page': 'login'})
+
+
+def logoutUser(request):
+    logout(request)
+    return redirect('home')
+def registerPage(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=password)
+            messages.success(request, f'Account created for {username}!')
+            login(request, user)
+            return redirect('home')
+        else: 
+            messages.error(request, 'An error has occurred during registration')
+    else:
+        form = UserCreationForm()
+    return render(request, 'restaurant/login_register.html', {'form': form})
+
+@login_required(login_url='login')
 def ingredient_list(request):
     ingredients = Ingredient.objects.all()
     return render(request, 'restaurant/ingredient_list.html', {'ingredients': ingredients})
 
+@login_required(login_url='login')
 def add_ingredient(request):
     if request.method == 'POST':
         form = IngredientForm(request.POST)

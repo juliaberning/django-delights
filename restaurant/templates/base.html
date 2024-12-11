@@ -19,10 +19,26 @@
                 <li><a href="{% url 'purchase_list' %}">View Purchases</a></li>
                 <li><a href="{% url 'add_purchase' %}">Record Purchase</a></li> {% endcomment %}
                 <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
     <main>
+        {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        {{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
         {% block content %}
         <!-- Page-specific content goes here -->
         {% endblock %}

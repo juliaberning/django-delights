@@ -1,14 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}View ingredients{% endblock %}
+{% block title %}View Ingredients{% endblock %}
 
 {% block content %}
-<h1>Ingredients</h1>
-<ul>
-  {% for ingredient in ingredients %}
-    <li>{{ ingredient.name }}: {{ ingredient.quantity }} ({{ ingredient.price_per_unit }} per unit)</li>
-  {% endfor %}
-</ul>
-<a href="{% url 'add_ingredient' %}">Add Ingredient</a>
-
+<div class="container mt-4">
+    <h1 class="mb-4">Ingredients</h1>
+    
+    {% if ingredients %}
+        <ul class="list-group">
+          {% for ingredient in ingredients %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ ingredient.name }}</span>
+              <span>{{ ingredient.quantity }} ({{ ingredient.price_per_unit }} per unit)</span>
+            </li>
+          {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No ingredients available. <a href="{% url 'add_ingredient' %}">Add some!</a></p>
+    {% endif %}
+    
+    <a href="{% url 'add_ingredient' %}" class="btn btn-primary mt-3">Add Ingredient</a>
+</div>
 {% endblock %}

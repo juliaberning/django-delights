@@ -1,0 +1,7 @@
+<h1>Ingredients</h1>
+<ul>
+  {% for ingredient in ingredients %}
+    <li>{{ ingredient.name }}: {{ ingredient.quantity }} ({{ ingredient.price_per_unit }} per unit)</li>
+  {% endfor %}
+</ul>
+<a href="{% url 'add_ingredient' %}">Add Ingredient</a>

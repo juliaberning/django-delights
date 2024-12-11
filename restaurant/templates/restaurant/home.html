@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Home</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Django Delights!</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'ingredient_list' %}">View Ingredients</a></li>
+                <li><a href="{% url 'add_ingredient' %}">Add Ingredient</a></li>
+                {% comment %} <li><a href="{% url 'menu_list' %}">View Menu Items</a></li>
+                <li><a href="{% url 'add_menu_item' %}">Add Menu Item</a></li>
+                <li><a href="{% url 'purchase_list' %}">View Purchases</a></li>
+                <li><a href="{% url 'add_purchase' %}">Record Purchase</a></li> {% endcomment %}
+                <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <p>Use the links above to manage the restaurant's inventory, menu, and sales!</p>
+    </main>
+    <footer>
+        <p>&copy; {{ current_year }} Django Delights. All rights reserved.</p>
+    </footer>
+</body>
+</html>

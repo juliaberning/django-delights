@@ -1,0 +1,20 @@
+# Ignore virtual environment
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore other common files
+*.db
+*.sqlite3
+*.log
+.env
+*.dot
+*.png
+
+# Ignore VSCode files
+.vscode/
+
+# Ignore macOS files
+.DS_Store

@@ -7,17 +7,29 @@
     <h1 class="mb-4">Ingredients</h1>
     
     {% if ingredients %}
-        <ul class="list-group">
-          {% for ingredient in ingredients %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>{{ ingredient.name }}</span>
-              <span>{{ ingredient.quantity }} ({{ ingredient.price_per_unit }} per unit)</span>
-            </li>
-          {% endfor %}
-        </ul>
+    <table class="table table-hover mt-4">  
+      <thead>
+        <tr class="table-primary">
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Price (per unit)</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for ingredient in ingredients %}
+        <tr>
+            <td>{{ ingredient.name }}</td>
+            <td>{{ ingredient.quantity }}</td>
+            <td>{{ ingredient.price_per_unit }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p>Total Cost: ${{ inventory_value }}</p>
     {% else %}
         <p class="text-muted">No ingredients available. <a href="{% url 'add_ingredient' %}">Add some!</a></p>
     {% endif %}
+    
     
     <a href="{% url 'add_ingredient' %}" class="btn btn-primary mt-3">Add Ingredient</a>
 </div>

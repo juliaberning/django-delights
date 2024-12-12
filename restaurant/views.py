@@ -4,11 +4,16 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Ingredient
-from .forms import IngredientForm
+from .models import Ingredient, MenuItem
+from .forms import IngredientForm, MenuItemForm
 
 def home(request):
     return render(request, 'restaurant/home.html')
+
+# ----------------------------
+# Authentication Views
+# ----------------------------
+
 
 def loginPage(request):
     if request.user.is_authenticated:
@@ -48,10 +53,16 @@ def registerPage(request):
         form = UserCreationForm()
     return render(request, 'restaurant/login_register.html', {'form': form})
 
+# ----------------------------
+# Ingredient Views
+# ----------------------------
+
 @login_required(login_url='login')
 def ingredient_list(request):
     ingredients = Ingredient.objects.all()
-    return render(request, 'restaurant/ingredient_list.html', {'ingredients': ingredients})
+    inventory_value = sum([ingredient.price_per_unit * ingredient.quantity for ingredient in ingredients])
+    context = {'ingredients': ingredients, 'inventory_value': inventory_value}
+    return render(request, 'restaurant/ingredient_list.html', context)
 
 @login_required(login_url='login')
 def add_ingredient(request):
@@ -63,3 +74,25 @@ def add_ingredient(request):
     else:
         form = IngredientForm()
     return render(request, 'restaurant/ingredient_form.html', {'form': form})
+
+
+# ----------------------------
+# MenuItem Views
+# ----------------------------
+
+@login_required(login_url='login')
+def menu_item_list(request):
+    menu_items = MenuItem.objects.all()
+    return render(request, 'restaurant/menu_item_list.html', {'menu_items': menu_items})
+
+@login_required(login_url='login')
+def add_menu_item(request):
+    if request.method == 'POST':
+        form = MenuItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Menu item created successfully!')
+            return redirect('menu_item_list')
+    else:
+        form = MenuItemForm()
+    return render(request, 'restaurant/menu_item_form.html', {'form': form})

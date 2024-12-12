@@ -14,4 +14,8 @@ urlpatterns = [
     path('create-menu-item/', views.create_menu_item, name='create_menu_item'),
     path('update-menu-item/<str:pk>/', views.update_menu_item, name='update_menu_item'),
     path('delete-menu-item/<str:pk>/', views.delete_menu_item, name='delete_menu_item'),
+    path('create-recipe-requirement/', views.create_recipe_requirement, name='create_recipe_requirement'),
+    path('recipe-requirement-detail/<str:pk>/', views.recipe_requirement_detail, name='recipe_requirement_detail'),
+    path('delete-recipe-requirement/<str:pk>/', views.delete_recipe_requirement, name='delete_recipe_requirement'),
+    path('update-requirement/<str:pk>/', views.update_recipe_requirement, name='update_recipe_requirement'),
 ]

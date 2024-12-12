@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Ingredient, MenuItem
-from .forms import IngredientForm, MenuItemForm
+from .models import Ingredient, MenuItem, RecipeRequirement
+from .forms import IngredientForm, MenuItemForm, RecipeRequirementForm
 
 def home(request):
     return render(request, 'restaurant/home.html')
@@ -136,3 +136,42 @@ def delete_menu_item(request, pk):
         menu_item.delete()
         return redirect('menu_item_list')
     return render(request, 'restaurant/delete.html', {'obj': menu_item})
+
+# ----------------------------
+# RecipeRequirement Views
+# ----------------------------
+
+@login_required(login_url='login')
+def create_recipe_requirement(request):
+    if request.method == 'POST':
+        form = RecipeRequirementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('menu_item_list') 
+    else:
+        form = RecipeRequirementForm()
+    return render(request, 'restaurant/recipe_requirement_form.html', {'form': form})
+
+def recipe_requirement_detail(request, pk):
+    menu_item = MenuItem.objects.get(id=pk)
+    recipe_requirements = RecipeRequirement.objects.filter(menu_item=menu_item)
+    return render(request, 'restaurant/recipe_requirement_detail.html', {'menu_item': menu_item, 'recipe_requirements': recipe_requirements})
+
+def update_recipe_requirement(request, pk):
+    recipe_requirement = RecipeRequirement.objects.get(id=pk)
+    if request.method == 'POST':
+        form = RecipeRequirementForm(request.POST, instance=recipe_requirement)
+        if form.is_valid():
+            form.save()
+            return redirect('recipe_requirement_detail', pk=recipe_requirement.menu_item.id)
+    else:
+        form = RecipeRequirementForm(instance=recipe_requirement)
+    return render(request, 'restaurant/recipe_requirement_form.html', {'form': form})
+
+@login_required(login_url='login')
+def delete_recipe_requirement(request, pk):
+    recipe_requirement = RecipeRequirement.objects.get(id=pk)
+    if request.method == 'POST':
+        recipe_requirement.delete()
+        return redirect('menu_item_list')
+    return render(request, 'restaurant/delete.html', {'obj': recipe_requirement})

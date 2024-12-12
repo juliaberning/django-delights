@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}View Ingredients{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Menu Item recipe details</h1>
+    
+<h3>{{ menu_item.name }} Recipe Requirements</h3>
+
+
+ {% if recipe_requirements %}
+    <table class="table table-hover mt-4">  
+        <thead>
+            <tr class="table-primary">
+                <th>Ingredient</th>
+                <th>Quantity</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for requirement in recipe_requirements %}
+            <tr>
+                <td>{{ requirement.ingredient.name }}</td>
+                <td>{{ requirement.quantity }}</td>
+                <td><a href="{% url 'update_recipe_requirement' requirement.id %}" class="btn btn-sm btn-warning">Edit</a></td>
+                <td><a href="{% url 'delete_recipe_requirement' requirement.id %}" class="btn btn-sm btn-danger">Delete</a></td>
+
+            </tr>
+        {% endfor %}
+        </body>
+    </table>
+    {% else %}
+        <p class="text-muted">No recipe requirements available. <a href="{% url 'menu_item_list' %}">Create some!</a></p>
+    {% endif %}
+    
+
+    <a href="{% url 'create_recipe_requirement' %}" class="btn btn-primary mt-3">Create a recipe requirement</a>
+</div>
+</div>
+{% endblock%}

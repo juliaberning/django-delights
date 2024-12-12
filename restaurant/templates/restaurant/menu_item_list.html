@@ -21,6 +21,7 @@
             <tr>
                 <td>{{ menu_item.name }}</td>
                 <td>{{ menu_item.price }}</td>
+                <td><a href="{% url 'recipe_requirement_detail' menu_item.id %}" class="btn btn-sm btn-warning">See recipe details</a></td>
                 <td><a href="{% url 'update_menu_item' menu_item.id %}" class="btn btn-sm btn-warning">Edit</a></td>
             <td><a href="{% url 'delete_menu_item' menu_item.id %}" class="btn btn-sm btn-danger">Delete</a></td>
             </tr>

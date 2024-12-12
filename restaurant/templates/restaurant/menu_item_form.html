@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Add MenuItem{% endblock %}
+{% block title %}Create Menu Item{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Add Menu Item</h1>
+    <h1 class="mb-4">Create Menu Item</h1>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}

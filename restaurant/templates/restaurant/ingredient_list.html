@@ -27,10 +27,10 @@
     </table>
     <p>Total Cost: ${{ inventory_value }}</p>
     {% else %}
-        <p class="text-muted">No ingredients available. <a href="{% url 'add_ingredient' %}">Add some!</a></p>
+        <p class="text-muted">No ingredients available. <a href="{% url 'create_ingredient' %}">Create some!</a></p>
     {% endif %}
     
     
-    <a href="{% url 'add_ingredient' %}" class="btn btn-primary mt-3">Add Ingredient</a>
+    <a href="{% url 'create_ingredient' %}" class="btn btn-primary mt-3">Create Ingredient</a>
 </div>
 {% endblock %}

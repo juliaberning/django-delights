@@ -65,7 +65,7 @@ def ingredient_list(request):
     return render(request, 'restaurant/ingredient_list.html', context)
 
 @login_required(login_url='login')
-def add_ingredient(request):
+def create_ingredient(request):
     if request.method == 'POST':
         form = IngredientForm(request.POST)
         if form.is_valid():
@@ -86,7 +86,7 @@ def menu_item_list(request):
     return render(request, 'restaurant/menu_item_list.html', {'menu_items': menu_items})
 
 @login_required(login_url='login')
-def add_menu_item(request):
+def create_menu_item(request):
     if request.method == 'POST':
         form = MenuItemForm(request.POST)
         if form.is_valid():

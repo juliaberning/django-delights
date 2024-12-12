@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Add Ingredient{% endblock %}
+{% block title %}Create Ingredient{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Add Ingredient</h1>
+    <h1 class="mb-4">Create Ingredient</h1>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}

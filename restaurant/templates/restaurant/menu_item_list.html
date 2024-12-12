@@ -24,10 +24,10 @@
         </body>
     </table>
     {% else %}
-        <p class="text-muted">No menu items available. <a href="{% url 'add_ingredient' %}">Add some!</a></p>
+        <p class="text-muted">No menu items available. <a href="{% url 'create_ingredient' %}">Create some!</a></p>
     {% endif %}
     
-    <a href="{% url 'add_menu_item' %}" class="btn btn-primary mt-3">Add Menu Item</a>
+    <a href="{% url 'create_menu_item' %}" class="btn btn-primary mt-3">Create Menu Item</a>
 </div>
 {% endblock %}
 

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -146,10 +147,18 @@ def create_recipe_requirement(request):
     if request.method == 'POST':
         form = RecipeRequirementForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('menu_item_list') 
+            try:
+                recipe_requirement = form.save()
+                messages.success(request, 'Recipe Requirement created successfully.')
+                return redirect('recipe_requirement_detail', pk=recipe_requirement.menu_item.id)
+            except IntegrityError:
+                messages.warning(request, 'This ingredient is already linked to this menu item.')
+                return redirect('create-recipe-requirement') 
+        else:
+            messages.error(request, 'Invalid form submission. Please check the data and try again.')
     else:
         form = RecipeRequirementForm()
+
     return render(request, 'restaurant/recipe_requirement_form.html', {'form': form})
 
 def recipe_requirement_detail(request, pk):

@@ -13,6 +13,8 @@
             <th>Name</th>
             <th>Quantity</th>
             <th>Price (per unit)</th>
+            <th></th>
+            <th></th>
         </tr>
       </thead>
       <tbody>
@@ -21,6 +23,8 @@
             <td>{{ ingredient.name }}</td>
             <td>{{ ingredient.quantity }}</td>
             <td>{{ ingredient.price_per_unit }}</td>
+            <td><a href="{% url 'update_ingredient' ingredient.id %}" class="btn btn-sm btn-warning">Edit</a></td>
+            <td><a href="{% url 'delete_ingredient' ingredient.id %}" class="btn btn-sm btn-danger">Delete</a></td>
         </tr>
       {% endfor %}
       </tbody>

@@ -75,6 +75,26 @@ def create_ingredient(request):
         form = IngredientForm()
     return render(request, 'restaurant/ingredient_form.html', {'form': form})
 
+@login_required(login_url='login')
+def update_ingredient(request, pk):
+    ingredient = Ingredient.objects.get(id=pk)
+    if request.method == 'POST':
+        form = IngredientForm(request.POST, instance=ingredient)
+        if form.is_valid():
+            form.save()
+            return redirect('ingredient_list')
+    else:
+        form = IngredientForm(instance=ingredient)
+    return render(request, 'restaurant/ingredient_form.html', {'form': form})
+
+@login_required(login_url='login')
+def delete_ingredient(request, pk):
+    ingredient = Ingredient.objects.get(id=pk)
+    if request.method == 'POST':
+        ingredient.delete()
+        return redirect('ingredient_list')
+    return render(request, 'restaurant/delete.html', {'obj': ingredient})
+
 
 # ----------------------------
 # MenuItem Views
@@ -96,3 +116,23 @@ def create_menu_item(request):
     else:
         form = MenuItemForm()
     return render(request, 'restaurant/menu_item_form.html', {'form': form})
+
+@login_required(login_url='login')
+def update_menu_item(request, pk):
+    menu_item = MenuItem.objects.get(id=pk)
+    if request.method == 'POST':
+        form = MenuItemForm(request.POST, instance=menu_item)
+        if form.is_valid():
+            form.save()
+            return redirect('menu_item_list')
+    else:
+        form = MenuItemForm(instance=menu_item)
+    return render(request, 'restaurant/menu_item_form.html', {'form': form})
+
+@login_required(login_url='login')
+def delete_menu_item(request, pk):
+    menu_item = MenuItem.objects.get(id=pk)
+    if request.method == 'POST':
+        menu_item.delete()
+        return redirect('menu_item_list')
+    return render(request, 'restaurant/delete.html', {'obj': menu_item})

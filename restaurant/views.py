@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect
-from django.db import IntegrityError
+from django.db import IntegrityError, models
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Sum
 
-from .models import Ingredient, MenuItem, RecipeRequirement
-from .forms import IngredientForm, MenuItemForm, RecipeRequirementForm
+
+from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
+from .forms import IngredientForm, MenuItemForm, PurchaseForm, RecipeRequirementForm
 
 def home(request):
     return render(request, 'restaurant/home.html')
@@ -184,3 +186,63 @@ def delete_recipe_requirement(request, pk):
         recipe_requirement.delete()
         return redirect('menu_item_list')
     return render(request, 'restaurant/delete.html', {'obj': recipe_requirement})
+
+# ----------------------------
+# Purchase Views
+# ----------------------------
+
+@login_required(login_url='login')
+def create_purchase(request):
+    if request.method == 'POST':
+        form = PurchaseForm(request.POST)
+        if form.is_valid():
+            purchase = form.save(commit=False)
+            menu_item = purchase.menu_item
+
+            #Validate inventory for all ingredients
+            insufficient_stock = []
+            for requirement in menu_item.reciperequirement_set.all():
+                if requirement.ingredient.quantity < requirement.quantity:
+                    insufficient_stock.append(
+                        f"{requirement.ingredient.name} (Required: {requirement.quantity}, Available: {requirement.ingredient.quantity})"
+                    )
+
+            # If any ingredient is insufficient, show an error message
+            if insufficient_stock:
+                messages.error(
+                    request,
+                    "Cannot complete the purchase. Insufficient stock for the following ingredient(s): "
+                    + ", ".join(insufficient_stock)
+                )
+                return redirect('create_purchase')
+
+            # Step 2: Deduct inventory
+            for requirement in menu_item.reciperequirement_set.all():
+                requirement.ingredient.quantity -= requirement.quantity
+                requirement.ingredient.save()
+
+            # Save the purchase
+            purchase.save()
+            messages.success(request, f"Purchase of {menu_item.name} completed!")
+            return redirect('purchase_list')
+
+    else:
+        form = PurchaseForm()
+
+    return render(request, 'restaurant/purchase_form.html', {'form': form})
+
+def purchase_list(request):
+    purchases = Purchase.objects.all()
+    total_revenue = purchases.aggregate(Sum('menu_item__price'))['menu_item__price__sum'] or 0
+
+    # Calculate total cost of inventory
+    inventory_cost = Ingredient.objects.aggregate(
+        total_cost=Sum(models.F('price_per_unit') * models.F('quantity'))
+    )['total_cost'] or 0
+
+    context = {
+        'purchases': purchases,
+        'total_revenue': total_revenue,
+        'inventory_cost': inventory_cost,
+    }
+    return render(request, 'restaurant/purchase_list.html', context)

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Purchase Log{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Purchase Log</h2>
+    <ul class="list-group">
+        {% for purchase in purchases %}
+            <li class="list-group-item">
+                <strong>{{ purchase.menu_item.name }}</strong> - ${{ purchase.menu_item.price }}
+                <br>
+                Purchased on: {{ purchase.timestamp|date:"M d, Y H:i" }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h3 class="mt-4">Summary</h3>
+    <p>Total Revenue: ${{ total_revenue }}</p>
+    <p>Total Inventory Cost: ${{ inventory_cost }}</p>
+</div>
+{% endblock %}

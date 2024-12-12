@@ -18,4 +18,6 @@ urlpatterns = [
     path('recipe-requirement-detail/<str:pk>/', views.recipe_requirement_detail, name='recipe_requirement_detail'),
     path('delete-recipe-requirement/<str:pk>/', views.delete_recipe_requirement, name='delete_recipe_requirement'),
     path('update-requirement/<str:pk>/', views.update_recipe_requirement, name='update_recipe_requirement'),
+    path('purchases/', views.purchase_list, name='purchase_list'),
+    path('create-purchase/', views.create_purchase, name='create_purchase'),
 ]

@@ -4,14 +4,13 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.db.models import Sum
-
+from django.db.models import Sum     
+import random
 
 from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
 from .forms import IngredientForm, MenuItemForm, PurchaseForm, RecipeRequirementForm
 
-def home(request):
-    return render(request, 'restaurant/home.html')
+def home(request):   return render(request, 'restaurant/home.html')
 
 # ----------------------------
 # Authentication Views
@@ -19,8 +18,7 @@ def home(request):
 
 
 def loginPage(request):
-    if request.user.is_authenticated:
-            return redirect('home')
+    if request.user.is_authenticated: return redirect('home')
 
     if request.method == 'POST':
         username = request.POST.get('username').lower()

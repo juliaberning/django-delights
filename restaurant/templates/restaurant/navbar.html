@@ -1,0 +1,46 @@
+<header>
+        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}">Django Delights</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarColor01">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'ingredient-list' %}">Ingredients</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'menu-item-list' %}">Menu Items</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'purchase-list' %}">Purchases</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Actions</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'ingredient-create' %}">Create Ingredient</a>
+                                <a class="dropdown-item" href="{% url 'menu-item-create' %}">Create Menu Item</a>
+                                <a class="dropdown-item" href="{% url 'recipe-requirement-create' %}">Create Recipe Requirement</a>
+                                <a class="dropdown-item" href="{% url 'purchase-create' %}">Create Purchase</a>
+                            </div>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>

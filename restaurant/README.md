@@ -83,12 +83,28 @@ ruff check --fix
 # Format all files in the current directory:
 ruff format .
 ``` 
+### Import Sorting
+This project uses [isort](https://pycqa.github.io/isort/) to sort and organize Python imports for better readability and consistency.
+
+```bash
+# Check for unsorted imports in the current directory:
+isort . --check
+
+# Automatically sort and organize imports:
+isort .
+
+# Preview changes without applying them:
+isort . --diff
+
+```
 
 ### Github Actions Workflow
 This repository uses GitHub Actions for automation. 
 
 ##### Configured workflows: 
-- Ruff Linter:  Ensures that the code adheres to linting standards.
+- **Ruff Linter**:  Ensures that the code adheres to linting standards.
+- **isort**: Ensures organized and sorted imports.
+- **unittests**: Ensures that the code is tested. 
 
 ##### Trigger: 
 - On every commit push to any branch.

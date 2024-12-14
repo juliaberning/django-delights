@@ -1,7 +1,8 @@
-from django.test import TestCase, Client
-from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import Ingredient, MenuItem, RecipeRequirement, Purchase
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
 
 
 class IngredientTests(TestCase):

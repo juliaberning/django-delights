@@ -4,15 +4,17 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
-from django.db.models import Sum, F
-from django.shortcuts import render, redirect
+from django.db.models import F, Sum
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import FormView
 
-from .forms import IngredientForm, MenuItemForm, PurchaseForm, RecipeRequirementForm
+from .forms import (IngredientForm, MenuItemForm, PurchaseForm,
+                    RecipeRequirementForm)
 from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
+
 
 def home(request):
     return render(request, 'restaurant/home.html')

@@ -24,8 +24,8 @@
             <tr>
                 <td>{{ requirement.ingredient.name }}</td>
                 <td>{{ requirement.quantity }}</td>
-                <td><a href="{% url 'update_recipe_requirement' requirement.id %}" class="btn btn-sm btn-warning">Edit</a></td>
-                <td><a href="{% url 'delete_recipe_requirement' requirement.id %}" class="btn btn-sm btn-danger">Delete</a></td>
+                <td><a href="{% url 'recipe_requirement-update' requirement.id %}" class="btn btn-sm btn-warning">Edit</a></td>
+                <td><a href="{% url 'recipe_requirement-delete' requirement.id %}" class="btn btn-sm btn-danger">Delete</a></td>
 
             </tr>
         {% endfor %}
@@ -36,7 +36,7 @@
     {% endif %}
     
 
-    <a href="{% url 'create_recipe_requirement' %}" class="btn btn-primary mt-3">Create a recipe requirement</a>
+    <a href="{% url 'recipe_requirement-create' %}" class="btn btn-primary mt-3">Create a recipe requirement</a>
 </div>
 </div>
 {% endblock%}

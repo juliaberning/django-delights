@@ -11,7 +11,7 @@ class IngredientTests(TestCase):
         self.client.login(username='testuser', password='password')
 
     def test_create_ingredient(self):
-        response = self.client.post(reverse('create_ingredient'), {
+        response = self.client.post(reverse('ingredient-create'), {
             'name': 'Tomato',
             'price_per_unit': 0.5,
             'quantity': 1000
@@ -21,7 +21,7 @@ class IngredientTests(TestCase):
 
     def test_list_ingredients(self):
         Ingredient.objects.create(name='Cheese', price_per_unit=1.5, quantity=500)
-        response = self.client.get(reverse('ingredient_list'))
+        response = self.client.get(reverse('ingredient-list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Cheese')
 
@@ -33,7 +33,7 @@ class MenuItemTests(TestCase):
         self.client.login(username='testuser', password='password')
 
     def test_create_menu_item(self):
-        response = self.client.post(reverse('create_menu_item'), {
+        response = self.client.post(reverse('menu-item-create'), {
             'name': 'Pizza',
             'price': 10.0
         })
@@ -50,7 +50,7 @@ class RecipeRequirementTests(TestCase):
         self.menu_item = MenuItem.objects.create(name='Pizza', price=10.0)
 
     def test_create_recipe_requirement(self):
-        response = self.client.post(reverse('create_recipe_requirement'), {
+        response = self.client.post(reverse('recipe-requirement-create'), {
             'menu_item': self.menu_item.id,
             'ingredient': self.ingredient.id,
             'quantity': 2
@@ -69,7 +69,7 @@ class PurchaseTests(TestCase):
         RecipeRequirement.objects.create(menu_item=self.menu_item, ingredient=self.ingredient, quantity=5)
 
     def test_purchase_sufficient_stock(self):
-        response = self.client.post(reverse('create_purchase'), {
+        response = self.client.post(reverse('purchase-create'), {
             'menu_item': self.menu_item.id,
         })
         self.assertEqual(response.status_code, 302)  # Redirect after purchase
@@ -80,7 +80,7 @@ class PurchaseTests(TestCase):
         self.ingredient.quantity = 3  # Not enough stock
         self.ingredient.save()
 
-        response = self.client.post(reverse('create_purchase'), {
+        response = self.client.post(reverse('purchase-create'), {
             'menu_item': self.menu_item.id,
         }, follow=True)  # Follow the redirect
 
@@ -96,12 +96,12 @@ class InventoryAndRevenueTests(TestCase):
         self.menu_item = MenuItem.objects.create(name='Burger', price=8.0)
 
     def test_inventory_cost(self):
-        response = self.client.get(reverse('ingredient_list'))
+        response = self.client.get(reverse('ingredient-list'))
         inventory_cost = 1.5 * 1000  # price_per_unit * quantity
         self.assertEqual(response.context['inventory_value'], inventory_cost)
 
     def test_total_revenue(self):
         Purchase.objects.create(menu_item=self.menu_item)
-        response = self.client.get(reverse('purchase_list'))
+        response = self.client.get(reverse('purchase-list'))
         total_revenue = 8.0  # One purchase of Burger
         self.assertEqual(response.context['total_revenue'], total_revenue)

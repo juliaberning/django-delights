@@ -22,18 +22,18 @@
             <tr>
                 <td>{{ menu_item.name }}</td>
                 <td>{{ menu_item.price }}</td>
-                <td><a href="{% url 'recipe_requirement_detail' menu_item.id %}" class="btn btn-sm btn-warning">See recipe details</a></td>
-                <td><a href="{% url 'update_menu_item' menu_item.id %}" class="btn btn-sm btn-warning">Edit</a></td>
-                <td><a href="{% url 'delete_menu_item' menu_item.id %}" class="btn btn-sm btn-danger">Delete</a></td>
+                <td><a href="{% url 'recipe-requirement-detail' menu_item.id %}" class="btn btn-sm btn-warning">See recipe details</a></td>
+                <td><a href="{% url 'menu-item-update' menu_item.id %}" class="btn btn-sm btn-warning">Edit</a></td>
+                <td><a href="{% url 'menu-item-delete' menu_item.id %}" class="btn btn-sm btn-danger">Delete</a></td>
             </tr>
         {% endfor %}
         </body>
     </table>
     {% else %}
-        <p class="text-muted">No menu items available. <a href="{% url 'create_ingredient' %}">Create some!</a></p>
+        <p class="text-muted">No menu items available. <a href="{% url 'ingredient-create' %}">Create some!</a></p>
     {% endif %}
     
-    <a href="{% url 'create_menu_item' %}" class="btn btn-primary mt-3">Create Menu Item</a>
+    <a href="{% url 'menu-item-create' %}" class="btn btn-primary mt-3">Create Menu Item</a>
 </div>
 {% endblock %}
 

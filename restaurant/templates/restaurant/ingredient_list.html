@@ -23,18 +23,18 @@
             <td>{{ ingredient.name }}</td>
             <td class="{% if ingredient.quantity < 100 %}bg-danger text-white{% endif %}">{{ ingredient.quantity }}</td>
             <td>{{ ingredient.price_per_unit }}</td>
-            <td><a href="{% url 'update_ingredient' ingredient.id %}" class="btn btn-sm btn-warning">Edit</a></td>
-            <td><a href="{% url 'delete_ingredient' ingredient.id %}" class="btn btn-sm btn-danger">Delete</a></td>
+            <td><a href="{% url 'ingredient-update' ingredient.id %}" class="btn btn-sm btn-warning">Edit</a></td>
+            <td><a href="{% url 'ingredient-delete' ingredient.id %}" class="btn btn-sm btn-danger">Delete</a></td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     <p>Total Cost: ${{ inventory_value }}</p>
     {% else %}
-        <p class="text-muted">No ingredients available. <a href="{% url 'create_ingredient' %}">Create some!</a></p>
+        <p class="text-muted">No ingredients available. <a href="{% url 'ingredient-create' %}">Create some!</a></p>
     {% endif %}
     
     
-    <a href="{% url 'create_ingredient' %}" class="btn btn-primary mt-3">Create Ingredient</a>
+    <a href="{% url 'ingredient-create' %}" class="btn btn-primary mt-3">Create Ingredient</a>
 </div>
 {% endblock %}

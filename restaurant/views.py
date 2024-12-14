@@ -39,6 +39,7 @@ def loginPage(request):
 def logoutUser(request):
     logout(request)
     return redirect('home')
+
 def registerPage(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -73,7 +74,7 @@ def create_ingredient(request):
         form = IngredientForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('ingredient_list')
+            return redirect('ingredient-list')
     else:
         form = IngredientForm()
     return render(request, 'restaurant/ingredient_form.html', {'form': form})
@@ -85,7 +86,7 @@ def update_ingredient(request, pk):
         form = IngredientForm(request.POST, instance=ingredient)
         if form.is_valid():
             form.save()
-            return redirect('ingredient_list')
+            return redirect('ingredient-list')
     else:
         form = IngredientForm(instance=ingredient)
     return render(request, 'restaurant/ingredient_form.html', {'form': form})
@@ -95,7 +96,7 @@ def delete_ingredient(request, pk):
     ingredient = Ingredient.objects.get(id=pk)
     if request.method == 'POST':
         ingredient.delete()
-        return redirect('ingredient_list')
+        return redirect('ingredient-list')
     return render(request, 'restaurant/delete.html', {'obj': ingredient})
 
 
@@ -115,7 +116,7 @@ def create_menu_item(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Menu item created successfully!')
-            return redirect('menu_item_list')
+            return redirect('menu-item-list')
     else:
         form = MenuItemForm()
     return render(request, 'restaurant/menu_item_form.html', {'form': form})
@@ -127,7 +128,7 @@ def update_menu_item(request, pk):
         form = MenuItemForm(request.POST, instance=menu_item)
         if form.is_valid():
             form.save()
-            return redirect('menu_item_list')
+            return redirect('menu-item-list')
     else:
         form = MenuItemForm(instance=menu_item)
     return render(request, 'restaurant/menu_item_form.html', {'form': form})
@@ -137,7 +138,7 @@ def delete_menu_item(request, pk):
     menu_item = MenuItem.objects.get(id=pk)
     if request.method == 'POST':
         menu_item.delete()
-        return redirect('menu_item_list')
+        return redirect('menu-item-list')
     return render(request, 'restaurant/delete.html', {'obj': menu_item})
 
 # ----------------------------
@@ -152,10 +153,10 @@ def create_recipe_requirement(request):
             try:
                 recipe_requirement = form.save()
                 messages.success(request, 'Recipe Requirement created successfully.')
-                return redirect('recipe_requirement_detail', pk=recipe_requirement.menu_item.id)
+                return redirect('recipe-requirement-detail', pk=recipe_requirement.menu_item.id)
             except IntegrityError:
                 messages.warning(request, 'This ingredient is already linked to this menu item.')
-                return redirect('create-recipe-requirement') 
+                return redirect('recipe-requirement-create') 
         else:
             messages.error(request, 'Invalid form submission. Please check the data and try again.')
     else:
@@ -174,7 +175,7 @@ def update_recipe_requirement(request, pk):
         form = RecipeRequirementForm(request.POST, instance=recipe_requirement)
         if form.is_valid():
             form.save()
-            return redirect('recipe_requirement_detail', pk=recipe_requirement.menu_item.id)
+            return redirect('recipe-requirement-detail', pk=recipe_requirement.menu_item.id)
     else:
         form = RecipeRequirementForm(instance=recipe_requirement)
     return render(request, 'restaurant/recipe_requirement_form.html', {'form': form})
@@ -184,7 +185,7 @@ def delete_recipe_requirement(request, pk):
     recipe_requirement = RecipeRequirement.objects.get(id=pk)
     if request.method == 'POST':
         recipe_requirement.delete()
-        return redirect('menu_item_list')
+        return redirect('menu-item-list')
     return render(request, 'restaurant/delete.html', {'obj': recipe_requirement})
 
 # ----------------------------
@@ -214,7 +215,7 @@ def create_purchase(request):
                     "Cannot complete the purchase. Insufficient stock for the following ingredient(s): "
                     + ", ".join(insufficient_stock)
                 )
-                return redirect('create_purchase')
+                return redirect('purchase-create')
 
             # Step 2: Deduct inventory
             for requirement in menu_item.reciperequirement_set.all():
@@ -224,7 +225,7 @@ def create_purchase(request):
             # Save the purchase
             purchase.save()
             messages.success(request, f"Purchase of {menu_item.name} completed!")
-            return redirect('purchase_list')
+            return redirect('purchase-list')
 
     else:
         form = PurchaseForm()

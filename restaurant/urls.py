@@ -3,21 +3,33 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+
+    # Authentication URLs
     path("login/", views.loginPage, name="login"),
     path("logout/", views.logoutUser, name="logout"),
     path("register/", views.registerPage, name="register"),
-    path('ingredients/', views.ingredient_list, name='ingredient_list'),
-    path('create-ingredient/', views.create_ingredient, name='create_ingredient'),
-    path('update-ingredient/<str:pk>/', views.update_ingredient, name='update_ingredient'),
-    path('delete-ingredient/<str:pk>/', views.delete_ingredient, name='delete_ingredient'),
-    path('menu/', views.menu_item_list, name='menu_item_list'),
-    path('create-menu-item/', views.create_menu_item, name='create_menu_item'),
-    path('update-menu-item/<str:pk>/', views.update_menu_item, name='update_menu_item'),
-    path('delete-menu-item/<str:pk>/', views.delete_menu_item, name='delete_menu_item'),
-    path('create-recipe-requirement/', views.create_recipe_requirement, name='create_recipe_requirement'),
-    path('recipe-requirement-detail/<str:pk>/', views.recipe_requirement_detail, name='recipe_requirement_detail'),
-    path('delete-recipe-requirement/<str:pk>/', views.delete_recipe_requirement, name='delete_recipe_requirement'),
-    path('update-requirement/<str:pk>/', views.update_recipe_requirement, name='update_recipe_requirement'),
-    path('purchases/', views.purchase_list, name='purchase_list'),
-    path('create-purchase/', views.create_purchase, name='create_purchase'),
+
+    # Ingredient URLs
+    path('ingredients/', views.ingredient_list, name='ingredient-list'),
+    path('ingredient/create/', views.create_ingredient, name='ingredient-create'),
+    path('ingredient/<str:pk>/update/', views.update_ingredient, name='ingredient-update'),
+    path('ingredient/<str:pk>/delete/', views.delete_ingredient, name='ingredient-delete'),
+
+    # MenuItem URLs
+    path('menu-items/', views.menu_item_list, name='menu-item-list'),
+    path('menu-item/create/', views.create_menu_item, name='menu-item-create'),
+    path('menu-item/<str:pk>/update/', views.update_menu_item, name='menu-item-update'),
+    path('menu-item/<str:pk>/delete/', views.delete_menu_item, name='menu-item-delete'),
+
+    # RecipeRequirement URLs
+    
+    path('recipe-requirement/<str:pk>/', views.recipe_requirement_detail, name='recipe-requirement-detail'),
+    path('recipe-requirement/create/', views.create_recipe_requirement, name='recipe-requirement-create'),
+    path('requirement/<str:pk>/update/', views.update_recipe_requirement, name='recipe-requirement-update'),
+    path('recipe-requirement/<str:pk>/delete', views.delete_recipe_requirement, name='recipe-requirement-delete'),
+
+    # Purchase URLs
+    path('purchases/', views.purchase_list, name='purchase-list'),
+    path('purchase/create/', views.create_purchase, name='purchase-create'),
+    
 ]

@@ -18,21 +18,21 @@
                 <div class="collapse navbar-collapse" id="navbarColor01">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link active" href="{% url 'ingredient_list' %}">Ingredients</a>
+                            <a class="nav-link active" href="{% url 'ingredient-list' %}">Ingredients</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'menu_item_list' %}">Menu Items</a>
+                            <a class="nav-link" href="{% url 'menu-item-list' %}">Menu Items</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'purchase_list' %}">Purchases</a>
+                            <a class="nav-link" href="{% url 'purchase-list' %}">Purchases</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Actions</a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="{% url 'create_ingredient' %}">Create Ingredient</a>
-                                <a class="dropdown-item" href="{% url 'create_menu_item' %}">Create Menu Item</a>
-                                <a class="dropdown-item" href="{% url 'create_recipe_requirement' %}">Create Recipe Requirement</a>
-                                <a class="dropdown-item" href="{% url 'create_purchase' %}">Create Purchase</a>
+                                <a class="dropdown-item" href="{% url 'ingredient-create' %}">Create Ingredient</a>
+                                <a class="dropdown-item" href="{% url 'menu-item-create' %}">Create Menu Item</a>
+                                <a class="dropdown-item" href="{% url 'recipe-requirement-create' %}">Create Recipe Requirement</a>
+                                <a class="dropdown-item" href="{% url 'purchase-create' %}">Create Purchase</a>
                             </div>
                         </li>
                     </ul>

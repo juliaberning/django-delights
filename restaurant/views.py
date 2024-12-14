@@ -1,14 +1,17 @@
-from django.shortcuts import render, redirect
-from django.db import IntegrityError, models
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.db.models import Sum
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import IntegrityError
+from django.db.models import Sum, F
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import FormView
 
-
-from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
 from .forms import IngredientForm, MenuItemForm, PurchaseForm, RecipeRequirementForm
+from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
 
 def home(request):
     return render(request, 'restaurant/home.html')
@@ -61,189 +64,176 @@ def registerPage(request):
 # Ingredient Views
 # ----------------------------
 
-@login_required(login_url='login')
-def ingredient_list(request):
-    ingredients = Ingredient.objects.all()
-    inventory_value = sum([ingredient.price_per_unit * ingredient.quantity for ingredient in ingredients])
-    context = {'ingredients': ingredients, 'inventory_value': inventory_value}
-    return render(request, 'restaurant/ingredient_list.html', context)
+class IngredientListView(LoginRequiredMixin, ListView):
+    model = Ingredient
+    template_name = 'restaurant/ingredient_list.html'
+    context_object_name = 'ingredients'
 
-@login_required(login_url='login')
-def create_ingredient(request):
-    if request.method == 'POST':
-        form = IngredientForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('ingredient-list')
-    else:
-        form = IngredientForm()
-    return render(request, 'restaurant/ingredient_form.html', {'form': form})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['inventory_value'] = sum(
+            [ingredient.price_per_unit * ingredient.quantity for ingredient in self.object_list]
+        )
+        return context
 
-@login_required(login_url='login')
-def update_ingredient(request, pk):
-    ingredient = Ingredient.objects.get(id=pk)
-    if request.method == 'POST':
-        form = IngredientForm(request.POST, instance=ingredient)
-        if form.is_valid():
-            form.save()
-            return redirect('ingredient-list')
-    else:
-        form = IngredientForm(instance=ingredient)
-    return render(request, 'restaurant/ingredient_form.html', {'form': form})
+class IngredientCreateView(LoginRequiredMixin, CreateView):
+    model = Ingredient
+    form_class = IngredientForm
+    template_name = 'restaurant/ingredient_form.html'
+    success_url = reverse_lazy('ingredient-list')
 
-@login_required(login_url='login')
-def delete_ingredient(request, pk):
-    ingredient = Ingredient.objects.get(id=pk)
-    if request.method == 'POST':
-        ingredient.delete()
-        return redirect('ingredient-list')
-    return render(request, 'restaurant/delete.html', {'obj': ingredient})
+class IngredientUpdateView(LoginRequiredMixin, UpdateView):
+    model = Ingredient
+    form_class = IngredientForm
+    template_name = 'restaurant/ingredient_form.html'
+    success_url = reverse_lazy('ingredient-list')
+
+class IngredientDeleteView(LoginRequiredMixin, DeleteView):
+    model = Ingredient
+    template_name = 'restaurant/delete.html'
+    success_url = reverse_lazy('ingredient-list')
+    context_object_name = 'obj'
 
 
 # ----------------------------
 # MenuItem Views
 # ----------------------------
+class MenuItemListView(LoginRequiredMixin, ListView):
+    model = MenuItem
+    template_name = 'restaurant/menu_item_list.html'
+    context_object_name = 'menu_items'
 
-@login_required(login_url='login')
-def menu_item_list(request):
-    menu_items = MenuItem.objects.all()
-    return render(request, 'restaurant/menu_item_list.html', {'menu_items': menu_items})
+class MenuItemCreateView(LoginRequiredMixin, CreateView):
+    model = MenuItem
+    form_class = MenuItemForm
+    template_name = 'restaurant/menu_item_form.html'
+    success_url = reverse_lazy('menu-item-list')
 
-@login_required(login_url='login')
-def create_menu_item(request):
-    if request.method == 'POST':
-        form = MenuItemForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Menu item created successfully!')
-            return redirect('menu-item-list')
-    else:
-        form = MenuItemForm()
-    return render(request, 'restaurant/menu_item_form.html', {'form': form})
+    def form_valid(self, form):
+        messages.success(self.request, 'Menu item created successfully!')
+        return super().form_valid(form)
 
-@login_required(login_url='login')
-def update_menu_item(request, pk):
-    menu_item = MenuItem.objects.get(id=pk)
-    if request.method == 'POST':
-        form = MenuItemForm(request.POST, instance=menu_item)
-        if form.is_valid():
-            form.save()
-            return redirect('menu-item-list')
-    else:
-        form = MenuItemForm(instance=menu_item)
-    return render(request, 'restaurant/menu_item_form.html', {'form': form})
+class MenuItemUpdateView(LoginRequiredMixin, UpdateView):
+    model = MenuItem
+    form_class = MenuItemForm
+    template_name = 'restaurant/menu_item_form.html'
+    success_url = reverse_lazy('menu-item-list')
 
-@login_required(login_url='login')
-def delete_menu_item(request, pk):
-    menu_item = MenuItem.objects.get(id=pk)
-    if request.method == 'POST':
-        menu_item.delete()
-        return redirect('menu-item-list')
-    return render(request, 'restaurant/delete.html', {'obj': menu_item})
+class MenuItemDeleteView(LoginRequiredMixin, DeleteView):
+    model = MenuItem
+    template_name = 'restaurant/delete.html'
+    success_url = reverse_lazy('menu-item-list')
+    context_object_name = 'obj'
 
 # ----------------------------
 # RecipeRequirement Views
 # ----------------------------
 
-@login_required(login_url='login')
-def create_recipe_requirement(request):
-    if request.method == 'POST':
-        form = RecipeRequirementForm(request.POST)
-        if form.is_valid():
-            try:
-                recipe_requirement = form.save()
-                messages.success(request, 'Recipe Requirement created successfully.')
-                return redirect('recipe-requirement-detail', pk=recipe_requirement.menu_item.id)
-            except IntegrityError:
-                messages.warning(request, 'This ingredient is already linked to this menu item.')
-                return redirect('recipe-requirement-create') 
-        else:
-            messages.error(request, 'Invalid form submission. Please check the data and try again.')
-    else:
-        form = RecipeRequirementForm()
+class RecipeRequirementCreateView(LoginRequiredMixin, CreateView):
+    model = RecipeRequirement
+    form_class = RecipeRequirementForm
+    template_name = 'restaurant/recipe_requirement_form.html'
 
-    return render(request, 'restaurant/recipe_requirement_form.html', {'form': form})
+    def form_valid(self, form):
+        try:
+            self.object = form.save()
+            messages.success(self.request, 'Recipe Requirement created successfully.')
+            return redirect('recipe-requirement-detail', pk=self.object.menu_item.id)
+        except IntegrityError:
+            messages.warning(self.request, 'This ingredient is already linked to this menu item.')
+            return redirect('recipe-requirement-create')
 
-def recipe_requirement_detail(request, pk):
-    menu_item = MenuItem.objects.get(id=pk)
-    recipe_requirements = RecipeRequirement.objects.filter(menu_item=menu_item)
-    return render(request, 'restaurant/recipe_requirement_detail.html', {'menu_item': menu_item, 'recipe_requirements': recipe_requirements})
+    def form_invalid(self, form):
+        messages.error(self.request, 'Invalid form submission. Please check the data and try again.')
+        return super().form_invalid(form)
 
-def update_recipe_requirement(request, pk):
-    recipe_requirement = RecipeRequirement.objects.get(id=pk)
-    if request.method == 'POST':
-        form = RecipeRequirementForm(request.POST, instance=recipe_requirement)
-        if form.is_valid():
-            form.save()
-            return redirect('recipe-requirement-detail', pk=recipe_requirement.menu_item.id)
-    else:
-        form = RecipeRequirementForm(instance=recipe_requirement)
-    return render(request, 'restaurant/recipe_requirement_form.html', {'form': form})
+class RecipeRequirementDetailView(LoginRequiredMixin, DetailView):
+    model = MenuItem
+    template_name = 'restaurant/recipe_requirement_detail.html'
+    context_object_name = 'menu_item'
 
-@login_required(login_url='login')
-def delete_recipe_requirement(request, pk):
-    recipe_requirement = RecipeRequirement.objects.get(id=pk)
-    if request.method == 'POST':
-        recipe_requirement.delete()
-        return redirect('menu-item-list')
-    return render(request, 'restaurant/delete.html', {'obj': recipe_requirement})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['recipe_requirements'] = RecipeRequirement.objects.filter(menu_item=self.object)
+        return context
+
+class RecipeRequirementUpdateView(LoginRequiredMixin, UpdateView):
+    model = RecipeRequirement
+    form_class = RecipeRequirementForm
+    template_name = 'restaurant/recipe_requirement_form.html'
+
+    def form_valid(self, form):
+        self.object = form.save()
+        messages.success(self.request, 'Recipe Requirement updated successfully.')
+        return redirect('recipe-requirement-detail', pk=self.object.menu_item.id)
+
+class RecipeRequirementDeleteView(LoginRequiredMixin, DeleteView):
+    model = RecipeRequirement
+    template_name = 'restaurant/delete.html'
+    context_object_name = 'obj'
+    success_url = reverse_lazy('menu-item-list')
 
 # ----------------------------
 # Purchase Views
 # ----------------------------
 
-@login_required(login_url='login')
-def create_purchase(request):
-    if request.method == 'POST':
-        form = PurchaseForm(request.POST)
-        if form.is_valid():
-            purchase = form.save(commit=False)
-            menu_item = purchase.menu_item
 
-            #Validate inventory for all ingredients
-            insufficient_stock = []
-            for requirement in menu_item.reciperequirement_set.all():
-                if requirement.ingredient.quantity < requirement.quantity:
-                    insufficient_stock.append(
-                        f"{requirement.ingredient.name} (Required: {requirement.quantity}, Available: {requirement.ingredient.quantity})"
-                    )
 
-            # If any ingredient is insufficient, show an error message
-            if insufficient_stock:
-                messages.error(
-                    request,
-                    "Cannot complete the purchase. Insufficient stock for the following ingredient(s): "
-                    + ", ".join(insufficient_stock)
+class PurchaseListView(LoginRequiredMixin, ListView):
+    model = Purchase
+    template_name = 'restaurant/purchase_list.html'
+    context_object_name = 'purchases'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Calculate total revenue
+        context['total_revenue'] = self.get_queryset().aggregate(
+            total=Sum('menu_item__price')
+        )['total'] or 0
+
+        # Calculate total cost of inventory
+        context['inventory_cost'] = Ingredient.objects.aggregate(
+            total_cost=Sum(F('price_per_unit') * F('quantity'))
+        )['total_cost'] or 0
+
+        return context
+    
+class PurchaseCreateView(LoginRequiredMixin, FormView):
+    template_name = 'restaurant/purchase_form.html'
+    form_class = PurchaseForm
+
+    def form_valid(self, form):
+        purchase = form.save(commit=False)
+        menu_item = purchase.menu_item
+
+        # Validate inventory for all ingredients
+        insufficient_stock = []
+        for requirement in menu_item.reciperequirement_set.all():
+            if requirement.ingredient.quantity < requirement.quantity:
+                insufficient_stock.append(
+                    f"{requirement.ingredient.name} (Required: {requirement.quantity}, Available: {requirement.ingredient.quantity})"
                 )
-                return redirect('purchase-create')
 
-            # Step 2: Deduct inventory
-            for requirement in menu_item.reciperequirement_set.all():
-                requirement.ingredient.quantity -= requirement.quantity
-                requirement.ingredient.save()
+        # If any ingredient is insufficient, show an error message
+        if insufficient_stock:
+            messages.error(
+                self.request,
+                "Cannot complete the purchase. Insufficient stock for the following ingredient(s): "
+                + ", ".join(insufficient_stock)
+            )
+            return redirect('purchase-create')
 
-            # Save the purchase
-            purchase.save()
-            messages.success(request, f"Purchase of {menu_item.name} completed!")
-            return redirect('purchase-list')
+        # Deduct inventory
+        for requirement in menu_item.reciperequirement_set.all():
+            requirement.ingredient.quantity -= requirement.quantity
+            requirement.ingredient.save()
 
-    else:
-        form = PurchaseForm()
+        # Save the purchase
+        purchase.save()
+        messages.success(self.request, f"Purchase of {menu_item.name} completed!")
+        return redirect('purchase-list')
 
-    return render(request, 'restaurant/purchase_form.html', {'form': form})
-
-def purchase_list(request):
-    purchases = Purchase.objects.all()
-    total_revenue = purchases.aggregate(Sum('menu_item__price'))['menu_item__price__sum'] or 0
-
-    # Calculate total cost of inventory
-    inventory_cost = Ingredient.objects.aggregate(
-        total_cost=Sum(models.F('price_per_unit') * models.F('quantity'))
-    )['total_cost'] or 0
-
-    context = {
-        'purchases': purchases,
-        'total_revenue': total_revenue,
-        'inventory_cost': inventory_cost,
-    }
-    return render(request, 'restaurant/purchase_list.html', context)
+    def form_invalid(self, form):
+        messages.error(self.request, "Invalid form submission. Please check the data and try again.")
+        return super().form_invalid(form)

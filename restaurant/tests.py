@@ -106,3 +106,38 @@ class InventoryAndRevenueTests(TestCase):
         response = self.client.get(reverse('purchase-list'))
         total_revenue = 8.0  # One purchase of Burger
         self.assertEqual(response.context['total_revenue'], total_revenue)
+
+class IngredientPDFViewTest(TestCase):
+    def setUp(self):
+        # Set up test client and log in user
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client.login(username='testuser', password='testpassword')
+
+        # Create test ingredients
+        self.ingredient1 = Ingredient.objects.create(name="Flour", quantity=10, price_per_unit=1.5)
+        self.ingredient2 = Ingredient.objects.create(name="Sugar", quantity=5, price_per_unit=2.0)
+
+    def test_pdf_view_response(self):
+        # Access the PDF view
+        response = self.client.get(reverse('ingredient-pdf'))
+
+        # Test that the response is successful
+        self.assertEqual(response.status_code, 200)
+
+        # Test that the response is of type PDF
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+        # Test that the filename is correct
+        self.assertIn('ingredient_list.pdf', response['Content-Disposition'])
+
+    def test_pdf_content(self):
+        # Access the PDF view
+        response = self.client.get(reverse('ingredient-pdf'))
+
+        # Verify that the response contains valid PDF content
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+        # Check that the content starts with the PDF file header
+        self.assertTrue(response.content.startswith(b"%PDF"), "The PDF content does not start with %PDF")

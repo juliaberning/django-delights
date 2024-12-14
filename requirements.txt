@@ -1,7 +1,10 @@
 asgiref==3.8.1
+chardet==5.2.0
 crispy-bootstrap5==2024.10
 Django==5.1.4
 django-crispy-forms==2.3
 isort==5.13.2
+pillow==11.0.0
+reportlab==4.2.5
 ruff==0.8.3
 sqlparse==0.5.3

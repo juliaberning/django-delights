@@ -5,11 +5,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import F, Sum
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import FormView
+from reportlab.pdfgen import canvas
 
 from .forms import (IngredientForm, MenuItemForm, PurchaseForm,
                     RecipeRequirementForm)
@@ -100,6 +103,50 @@ class IngredientDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     context_object_name = 'obj'
     success_message = "Item was deleted successfully!" 
 
+class IngredientPDFView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        # Create a PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="ingredient_list.pdf"'
+
+        # Create the PDF object using ReportLab
+        p = canvas.Canvas(response)
+
+        # Query all ingredients
+        ingredients = Ingredient.objects.all()
+
+        # Set title
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(100, 800, "Ingredient List")
+
+        # Add table headers
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, 760, "Name")
+        p.drawString(200, 760, "Quantity")
+        p.drawString(350, 760, "Price Per Unit")
+        p.drawString(450, 760, "Total Value")
+
+        # Add data rows
+        y = 740
+        for ingredient in ingredients:
+            total_value = ingredient.price_per_unit * ingredient.quantity
+
+            p.setFont("Helvetica", 12)
+            p.drawString(50, y, ingredient.name)
+            p.drawString(200, y, str(ingredient.quantity))
+            p.drawString(350, y, f"${ingredient.price_per_unit:.2f}")
+            p.drawString(450, y, f"${total_value:.2f}")
+            y -= 20  # Move to the next line
+
+            if y < 50:  # Create a new page if space runs out
+                p.showPage()
+                y = 800
+
+        # Finalize the PDF
+        p.showPage()
+        p.save()
+
+        return response
 
 # ----------------------------
 # MenuItem Views

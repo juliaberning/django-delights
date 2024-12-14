@@ -29,6 +29,8 @@
       {% endfor %}
       </tbody>
     </table>
+
+    <a href="{% url 'ingredient-pdf' %}" class="btn btn-primary">Download Ingredient List as PDF</a>
     <p>Total Cost: ${{ inventory_value }}</p>
     {% else %}
         <p class="text-muted">No ingredients available. <a href="{% url 'ingredient-create' %}">Create some!</a></p>

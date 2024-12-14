@@ -2,71 +2,116 @@
 
 This Django app helps restaurant employees easily manage ingredient inventory, create menus and recipes with prices, track purchases, and stay informed about low stock levels.
 
-## Setup Instructions
+## Getting started
 
-### 1. Create and activate a virtual environment
-
-Create a virtual environment to keep dependencies isolated:
+### Prerequisites
+Ensure the following are installed on your system:
+- **Git** 
+- **Python 3.10** or higher (tested on 3.13.1)
 
 ```bash
-python3 -m venv .venv
+python --version
 ```
- Activate the virtual environment (use the appropriate command for your OS).
+
+### Installation
+1. Clone this repository and navigate into the project directory.
 
 ```bash
-# On Windows
-.venv\Scripts\activate
+git clone <Github-link> && cd <project-directory>
+```
 
-# On macOS and Linux
+2. Create and activate a virtual environment:
+
+```bash
+# Create the virtual environment
+python3 -m venv .venv
+
+# Activate the virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
 source .venv/bin/activate
 ```
-### 2. Install dependencies
-Install the required dependencies from the `requirements.txt` file:
-
+3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
+## How to use
 
-### 3. Create a superuser
-To access the Django admin interface, you’ll need a superuser account. Create one by running:
+### Set up the database
+1. Prepare and apply migrations:
+```bash
+python3 manage.py makemigrations
+python3 manage.py migrate
+```
+
+2. Create a superuser for accessing the admin interface by running the following command and following the instructions:
 ```bash
 python3 manage.py createsuperuser
 ```
-Follow the prompts to set up a username, email, and password.
 
-### 4. Run the server
 
+### Run the server
+Start the server locally: 
 ```bash
 python3 manage.py runserver
 ```
 
-The Django admin interface allows you to manage your application's data and settings. You can access it at the `/admin` route after starting the server. For example:
-
+Access the admin interface at:
 http://127.0.0.1:8000/admin/
 
-### 5. Make and apply migrations
-Migrations are necessary to create and update database tables. Run the following commands to make and apply migrations when first running the app and after any change in the models: 
-```bash
-# Prepare migrations
-python3 manage.py makemigrations
 
-# Apply migrations to the database
-python3 manage.py migrate
+## Development
+
+### Testing
+Run unit tests to verify the functionality: 
+
+```bash
+python3 manage.py test
 ```
 
-## Optional
+### Linting & Formatting
+This project uses [ruff](https://docs.astral.sh/ruff/) for linting and formatting.
 
-### Generate a model diagram
-To visualize the relationships between models, you can create a diagram using Django Extensions and Graphviz.
+```bash
+# Check for linting issues in the current directory:
+ruff check . 
 
-Install the necessary libraries (they are not part of `requirements.txt` as this part is optional):
+# Automatically fix linting issues:
+ruff check --fix
+
+# Format all files in the current directory:
+ruff format .
+``` 
+
+### Github Actions Workflow
+This repository uses GitHub Actions for automation. 
+
+##### Configured workflows: 
+- Ruff Linter:  Ensures that the code adheres to linting standards.
+
+##### Trigger: 
+- On every commit push to any branch.
+
+
+### Optional: Generate a model diagram
+You can generate a visual diagram of your models using Django Extensions and Graphviz.
+
+Install the necessary libraries:
 ```bash
 pip install django-extensions
 brew install graphviz
 ```
 Add `django-extensions` to `INSTALLED_APPS` in `settings.py`.
 
-Add the `GRAPH_MODELS` settings to `settings.py`:
+```bash
+INSTALLED_APPS = [
+    ...,
+    'django_extensions',
+]
+```
+
+Add the following to `settings.py` to enable diagram generation:
 
 ```bash
 GRAPH_MODELS = {
@@ -80,7 +125,7 @@ Generate the model diagram as a .dot file:
 python3 manage.py graph_models -a --dot -o restaurant_models.dot
 ```
 
-Convert the .dot file to a .png image:
+Convert the .dot file to an image:
 ```bash
 dot -Tpng base_models.dot -o restaurant_models.png
 ```

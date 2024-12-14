@@ -141,3 +141,26 @@ class IngredientPDFViewTest(TestCase):
 
         # Check that the content starts with the PDF file header
         self.assertTrue(response.content.startswith(b"%PDF"), "The PDF content does not start with %PDF")
+
+class IngredientCSVViewTest(TestCase):
+    def setUp(self):
+        # Set up test user and ingredients
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.login(username='testuser', password='password')
+        Ingredient.objects.create(name="Flour", price_per_unit=1.5, quantity=10)
+        Ingredient.objects.create(name="Sugar", price_per_unit=2.0, quantity=5)
+
+    def test_csv_view(self):
+        response = self.client.get(reverse('ingredient-csv'))
+
+        # Check that the response is successful
+        self.assertEqual(response.status_code, 200)
+
+        # Check that the response is a CSV file
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment; filename="ingredients.csv"', response['Content-Disposition'])
+
+        # Check that the CSV content includes the ingredient data
+        csv_content = response.content.decode('utf-8')
+        self.assertIn("Flour", csv_content)
+        self.assertIn("Sugar", csv_content)

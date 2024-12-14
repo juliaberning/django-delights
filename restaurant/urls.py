@@ -16,8 +16,9 @@ urlpatterns = [
     path('ingredient/<int:pk>/update/', views.IngredientUpdateView.as_view(), name='ingredient-update'),
     path('ingredient/<int:pk>/delete/', views.IngredientDeleteView.as_view(), name='ingredient-delete'),
 
-    # PDF View
+    # PDF & CSV Views
     path('ingredients/pdf/', views.IngredientPDFView.as_view(), name='ingredient-pdf'),
+    path('ingredients/csv/', views.IngredientCSVView.as_view(), name='ingredient-csv'),
 
     # MenuItem URLs
     path('menu-items/', views.MenuItemListView.as_view(), name='menu-item-list'),

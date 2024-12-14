@@ -1,3 +1,5 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -147,6 +149,27 @@ class IngredientPDFView(LoginRequiredMixin, View):
         p.save()
 
         return response
+    
+
+class IngredientCSVView(View):
+    def get(self, request, *args, **kwargs):
+        # Create a response object with the correct content type
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="ingredients.csv"'
+
+        # Create a CSV writer
+        writer = csv.writer(response)
+
+        # Write the header row
+        writer.writerow(['Name', 'Quantity', 'Price per Unit'])
+
+        # Write the ingredient data rows
+        ingredients = Ingredient.objects.all()
+        for ingredient in ingredients:
+            writer.writerow([ingredient.name, ingredient.price_per_unit, ingredient.quantity])
+
+        return response
+
 
 # ----------------------------
 # MenuItem Views

@@ -10,16 +10,7 @@
 <body class="d-flex flex-column min-vh-100">
     {% include 'restaurant/navbar.html' %}
     <main class="container mt-4 flex-grow-1">
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    {% include 'restaurant/messages.html' %}
     {% block content %}
     <!-- Page-specific content goes here -->
     {% endblock %}

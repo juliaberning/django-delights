@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Sum, F
 from django.shortcuts import render, redirect
@@ -35,7 +36,7 @@ def loginPage(request):
             messages.success(request, f"Welcome back, {user.username}!")
             return redirect('home')
         else:
-            messages.error(request, 'Invalid username or password. Please try again.')
+            messages.error(request, 'Invalid username or password. Please try again.', extra_tags='danger')
     return render(request, 'restaurant/login_register.html', {'page': 'login'})
 
 
@@ -55,7 +56,7 @@ def registerPage(request):
             login(request, user)
             return redirect('home')
         else: 
-            messages.error(request, 'An error has occurred during registration')
+            messages.error(request, 'An error has occurred during registration', extra_tags='danger')
     else:
         form = UserCreationForm()
     return render(request, 'restaurant/login_register.html', {'form': form})
@@ -76,23 +77,26 @@ class IngredientListView(LoginRequiredMixin, ListView):
         )
         return context
 
-class IngredientCreateView(LoginRequiredMixin, CreateView):
+class IngredientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Ingredient
     form_class = IngredientForm
     template_name = 'restaurant/ingredient_form.html'
     success_url = reverse_lazy('ingredient-list')
+    success_message = "%(name)s was created successfully!"    
 
-class IngredientUpdateView(LoginRequiredMixin, UpdateView):
+class IngredientUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Ingredient
     form_class = IngredientForm
     template_name = 'restaurant/ingredient_form.html'
     success_url = reverse_lazy('ingredient-list')
+    success_message = "%(name)s was updated successfully!"  
 
-class IngredientDeleteView(LoginRequiredMixin, DeleteView):
+class IngredientDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Ingredient
     template_name = 'restaurant/delete.html'
     success_url = reverse_lazy('ingredient-list')
     context_object_name = 'obj'
+    success_message = "Item was deleted successfully!" 
 
 
 # ----------------------------
@@ -103,49 +107,47 @@ class MenuItemListView(LoginRequiredMixin, ListView):
     template_name = 'restaurant/menu_item_list.html'
     context_object_name = 'menu_items'
 
-class MenuItemCreateView(LoginRequiredMixin, CreateView):
+class MenuItemCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = MenuItem
     form_class = MenuItemForm
     template_name = 'restaurant/menu_item_form.html'
     success_url = reverse_lazy('menu-item-list')
+    success_message = "%(name)s was created successfully!"  
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Menu item created successfully!')
-        return super().form_valid(form)
-
-class MenuItemUpdateView(LoginRequiredMixin, UpdateView):
+class MenuItemUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = MenuItem
     form_class = MenuItemForm
     template_name = 'restaurant/menu_item_form.html'
     success_url = reverse_lazy('menu-item-list')
+    success_message = "%(name)s was updated successfully!" 
 
-class MenuItemDeleteView(LoginRequiredMixin, DeleteView):
+class MenuItemDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = MenuItem
     template_name = 'restaurant/delete.html'
     success_url = reverse_lazy('menu-item-list')
     context_object_name = 'obj'
+    success_message = "Item was deleted successfully!" 
 
 # ----------------------------
 # RecipeRequirement Views
 # ----------------------------
 
-class RecipeRequirementCreateView(LoginRequiredMixin, CreateView):
+class RecipeRequirementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = RecipeRequirement
     form_class = RecipeRequirementForm
     template_name = 'restaurant/recipe_requirement_form.html'
+    success_message = "Recipe Requirement for %(menu_item)s and %(ingredient)s was created successfully!"
+
+    def get_success_url(self):
+        return reverse_lazy('recipe-requirement-detail', kwargs={'pk': self.object.menu_item.id})
 
     def form_valid(self, form):
         try:
-            self.object = form.save()
-            messages.success(self.request, 'Recipe Requirement created successfully.')
-            return redirect('recipe-requirement-detail', pk=self.object.menu_item.id)
+            return super().form_valid(form)
         except IntegrityError:
-            messages.warning(self.request, 'This ingredient is already linked to this menu item.')
-            return redirect('recipe-requirement-create')
+            messages.error(self.request, 'This ingredient is already linked to this menu item.', extra_tags='danger')
+            return self.render_to_response(self.get_context_data(form=form))
 
-    def form_invalid(self, form):
-        messages.error(self.request, 'Invalid form submission. Please check the data and try again.')
-        return super().form_invalid(form)
 
 class RecipeRequirementDetailView(LoginRequiredMixin, DetailView):
     model = MenuItem
@@ -157,21 +159,22 @@ class RecipeRequirementDetailView(LoginRequiredMixin, DetailView):
         context['recipe_requirements'] = RecipeRequirement.objects.filter(menu_item=self.object)
         return context
 
-class RecipeRequirementUpdateView(LoginRequiredMixin, UpdateView):
+class RecipeRequirementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = RecipeRequirement
     form_class = RecipeRequirementForm
     template_name = 'restaurant/recipe_requirement_form.html'
+    success_message = "Recipe Requirement for %(menu_item)s and %(ingredient)s was updated successfully!"
 
-    def form_valid(self, form):
-        self.object = form.save()
-        messages.success(self.request, 'Recipe Requirement updated successfully.')
-        return redirect('recipe-requirement-detail', pk=self.object.menu_item.id)
+    def get_success_url(self):
+        return reverse_lazy('recipe-requirement-detail', kwargs={'pk': self.object.menu_item.id})
 
-class RecipeRequirementDeleteView(LoginRequiredMixin, DeleteView):
+
+class RecipeRequirementDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = RecipeRequirement
     template_name = 'restaurant/delete.html'
     context_object_name = 'obj'
     success_url = reverse_lazy('menu-item-list')
+    success_message = "Item was deleted successfully!" 
 
 # ----------------------------
 # Purchase Views
@@ -220,7 +223,7 @@ class PurchaseCreateView(LoginRequiredMixin, FormView):
             messages.error(
                 self.request,
                 "Cannot complete the purchase. Insufficient stock for the following ingredient(s): "
-                + ", ".join(insufficient_stock)
+                + ", ".join(insufficient_stock), extra_tags='danger'
             )
             return redirect('purchase-create')
 
@@ -235,5 +238,5 @@ class PurchaseCreateView(LoginRequiredMixin, FormView):
         return redirect('purchase-list')
 
     def form_invalid(self, form):
-        messages.error(self.request, "Invalid form submission. Please check the data and try again.")
+        messages.error(self.request, "Invalid form submission. Please check the data and try again.", extra_tags='danger')
         return super().form_invalid(form)

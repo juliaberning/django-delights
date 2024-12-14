@@ -22,14 +22,12 @@ urlpatterns = [
     path('menu-item/<str:pk>/delete/', views.delete_menu_item, name='menu-item-delete'),
 
     # RecipeRequirement URLs
-    
     path('recipe-requirement/<str:pk>/', views.recipe_requirement_detail, name='recipe-requirement-detail'),
     path('recipe-requirement/create/', views.create_recipe_requirement, name='recipe-requirement-create'),
     path('requirement/<str:pk>/update/', views.update_recipe_requirement, name='recipe-requirement-update'),
-    path('recipe-requirement/<str:pk>/delete', views.delete_recipe_requirement, name='recipe-requirement-delete'),
+    path('recipe-requirement/<str:pk>/delete/', views.delete_recipe_requirement, name='recipe-requirement-delete'),
 
     # Purchase URLs
     path('purchases/', views.purchase_list, name='purchase-list'),
     path('purchase/create/', views.create_purchase, name='purchase-create'),
-    
 ]

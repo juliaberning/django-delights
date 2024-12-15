@@ -28,7 +28,27 @@ from .models import Ingredient, MenuItem, Purchase, RecipeRequirement
 
 
 def home(request):
-    return render(request, 'restaurant/home.html')
+    cards = [
+        {
+            "title": "Ingredients",
+            "description": "Manage your ingredients effectively. View the inventory, add new ingredients, or update existing ones.",
+            "url_name": "ingredient-list",
+            "btn_text": "Go to Ingredients"
+        },
+        {
+            "title": "Menu Items",
+            "description": "Create and edit menu items for your restaurant. Link them to your ingredients for tracking.",
+            "url_name": "menu-item-list",
+            "btn_text": "Go to Menu Items"
+        },
+        {
+            "title": "Purchases",
+            "description": "Track your purchases and inventory in one place. Stay on top of your stock.",
+            "url_name": "purchase-list",
+            "btn_text": "Go to Purchases"
+        }
+    ]
+    return render(request, 'restaurant/home.html', {'cards': cards})
 
 # ----------------------------
 # Authentication Views

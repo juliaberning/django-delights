@@ -6,36 +6,20 @@
 <div class="container mt-4">
     <h1 class="mb-4 text-center">Welcome to Django Delights!</h1>
 
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card border-primary mb-3">
-                <div class="card-header bg-primary text-white">Ingredients</div>
-                <div class="card-body">
-                    <p class="card-text">Manage your ingredients effectively. View the inventory, add new ingredients, or update existing ones.</p>
-                    <a href="{% url 'ingredient-list' %}" class="btn btn-primary w-100">Go to Ingredients</a>
+<div class="row justify-content-center">
+    {% for card in cards %}
+        <div class="col-md-4 d-flex align-items-stretch mb-4">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-primary text-white">{{ card.title }}</div>
+                <div class="card-body d-flex flex-column">
+                    <p class="card-text">{{ card.description }}</p>
+                    <div class="mt-auto">
+                        <a href="{% url card.url_name %}" class="btn btn-primary w-100">{{ card.btn_text }}</a>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4">
-            <div class="card border-primary mb-3">
-                <div class="card-header bg-primary text-white">Menu Items</div>
-                <div class="card-body">
-                    <p class="card-text">Create and edit menu items for your restaurant. Link them to your ingredients for tracking.</p>
-                    <a href="{% url 'menu-item-list' %}" class="btn btn-primary w-100">Go to Menu Items</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-primary mb-3">
-                <div class="card-header bg-primary text-white">Purchases</div>
-                <div class="card-body">
-                    <p class="card-text">Track your purchases and inventory in one place. Stay on top of your stock.</p>
-                    <a href="{% url 'purchase-list' %}" class="btn btn-primary w-100">Go to Purchases</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
+</div>
 </div>
 {% endblock %}

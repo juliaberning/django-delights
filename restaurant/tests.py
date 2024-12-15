@@ -164,3 +164,26 @@ class IngredientCSVViewTest(TestCase):
         csv_content = response.content.decode('utf-8')
         self.assertIn("Flour", csv_content)
         self.assertIn("Sugar", csv_content)
+
+class TotalPurchasesAjaxTest(TestCase):
+
+    def setUp(self):
+        # Create a sample menu item and purchases
+        self.burger = MenuItem.objects.create(name="Burger", price=5.0)
+        Purchase.objects.create(menu_item=self.burger)
+        Purchase.objects.create(menu_item=self.burger)
+
+    def test_total_purchases_ajax(self):
+        # Simulate an AJAX GET request to the endpoint
+        url = reverse('total-purchases-ajax')  # Replace with your URL name
+        response = self.client.get(url)
+
+        # Assert that the response is successful
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the JSON response
+        json_response = response.json()
+
+        # Assert the JSON structure and content
+        self.assertIn('total_purchases', json_response)
+        self.assertEqual(json_response['total_purchases'], 2)  # Expecting 2 purchases

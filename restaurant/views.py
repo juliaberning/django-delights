@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import F, Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -348,6 +348,10 @@ class PurchaseCreateView(LoginRequiredMixin, FormView):
         messages.error(self.request, "Invalid form submission. Please check the data and try again.", extra_tags='danger')
         return super().form_invalid(form)
     
+
+def total_purchases_ajax(request):
+    total_purchases = Purchase.objects.count()
+    return JsonResponse({'total_purchases': total_purchases})
 # ----------------------------
 # Analytics View
 # ----------------------------

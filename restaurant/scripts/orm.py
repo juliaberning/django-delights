@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from django.db import connection, transaction
+from django.db import connection
 from django.db.models import F, Sum
 
 from restaurant.models import Ingredient, MenuItem, Purchase, RecipeRequirement

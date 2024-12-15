@@ -109,6 +109,15 @@ This repository uses GitHub Actions for automation.
 ##### Trigger: 
 - On every commit push to any branch.
 
+### Inspect Database Queries with runscript
+The [runscript](https://django-extensions.readthedocs.io/en/latest/runscript.html) command lets you run an arbitrary set of python commands within the Django context. It offers the same usability and functionality as running a set of commands in `shell`.
+
+The `orm.py` script demonstrates Django's ORM interaction with the database and logs raw SQL queries when `LOGGING_ENABLED = True`, aiding debugging and performance analysis.
+
+```bash 
+python manage.py runscript orm
+```
+
 
 ### Optional: Generate a model diagram
 You can generate a visual diagram of your models using Django Extensions and Graphviz.

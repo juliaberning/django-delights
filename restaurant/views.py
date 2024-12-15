@@ -1,5 +1,8 @@
+import base64
 import csv
+import io
 
+import matplotlib
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -14,6 +17,9 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import FormView
+
+matplotlib.use('Agg')  # Use a non-GUI backend
+from matplotlib import pyplot as plt
 from reportlab.pdfgen import canvas
 
 from .forms import (IngredientForm, MenuItemForm, PurchaseForm,
@@ -251,9 +257,6 @@ class RecipeRequirementDeleteView(LoginRequiredMixin, SuccessMessageMixin, Delet
 # ----------------------------
 # Purchase Views
 # ----------------------------
-
-
-
 class PurchaseListView(LoginRequiredMixin, ListView):
     model = Purchase
     template_name = 'restaurant/purchase_list.html'
@@ -312,3 +315,102 @@ class PurchaseCreateView(LoginRequiredMixin, FormView):
     def form_invalid(self, form):
         messages.error(self.request, "Invalid form submission. Please check the data and try again.", extra_tags='danger')
         return super().form_invalid(form)
+    
+# ----------------------------
+# Analytics View
+# ----------------------------
+
+
+def generate_chart(chart_function):
+    """Helper function to generate a base64 chart."""
+    buf = io.BytesIO()
+    chart_function()  # Call the provided chart function to plot the data
+    plt.tight_layout()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    string = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+    plt.close()  # Close the plot to avoid overlaps
+    return string
+
+
+def chart(request):
+    def generate_chart(chart_function):
+        """Helper function to generate a base64 chart."""
+        buf = io.BytesIO()
+        chart_function()
+        plt.tight_layout()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        string = base64.b64encode(buf.read()).decode('utf-8')
+        buf.close()
+        plt.close()
+        return string
+
+    def revenue_chart():
+        menu_items = MenuItem.objects.all()
+        names = [item.name for item in menu_items]
+        revenues = [
+            item.price * Purchase.objects.filter(menu_item=item).count()
+            for item in menu_items
+        ]
+        plt.bar(names, revenues, color='skyblue')
+        plt.title("Revenue by Menu Item")
+        plt.xlabel("Menu Item")
+        plt.ylabel("Revenue ($)")
+        plt.xticks(rotation=45)
+
+    def ingredient_usage_chart():
+        ingredients = Ingredient.objects.all()
+        labels = [ingredient.name for ingredient in ingredients]
+        quantities = [
+            RecipeRequirement.objects.filter(ingredient=ingredient).aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            for ingredient in ingredients
+        ]
+        plt.pie(quantities, labels=labels, autopct='%1.1f%%', startangle=140)
+        plt.title("Ingredient Usage Distribution")
+
+    def menu_popularity_chart():
+        purchases = Purchase.objects.all().order_by('timestamp')
+        dates = sorted(set(purchase.timestamp.date() for purchase in purchases))
+        menu_items = MenuItem.objects.all()
+        for item in menu_items:
+            counts = [
+                Purchase.objects.filter(menu_item=item, timestamp__date=date).count()
+                for date in dates
+            ]
+            plt.plot(dates, counts, marker='o', label=item.name)
+        plt.title("Menu Popularity Over Time")
+        plt.xlabel("Date")
+        plt.ylabel("Number of Purchases")
+        plt.legend()
+        plt.grid()
+
+    def inventory_chart():
+        ingredients = Ingredient.objects.all()
+        labels = [ingredient.name for ingredient in ingredients]
+        remaining = [ingredient.quantity for ingredient in ingredients]
+        used = [
+            RecipeRequirement.objects.filter(ingredient=ingredient).aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            for ingredient in ingredients
+        ]
+        x = range(len(labels))
+        plt.barh(x, remaining, color='green', label='Remaining')
+        plt.barh(x, used, color='red', label='Used', left=remaining)
+        plt.yticks(x, labels)
+        plt.xlabel("Quantity")
+        plt.title("Ingredient Inventory Overview")
+        plt.legend()
+
+    charts = [
+        {"title": "Revenue by Menu Item", "data": generate_chart(revenue_chart)},
+        {"title": "Ingredient Usage Distribution", "data": generate_chart(ingredient_usage_chart)},
+        {"title": "Menu Popularity Over Time", "data": generate_chart(menu_popularity_chart)},
+        {"title": "Ingredient Inventory Overview", "data": generate_chart(inventory_chart)},
+    ]
+
+    return render(request, 'restaurant/chart.html', {"charts": charts})

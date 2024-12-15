@@ -27,17 +27,12 @@
     $(document).ready(function() {
         // Function to fetch and update the total purchases count
         function updateTotalPurchases() {
-            $.ajax({
-                url: "{% url 'total-purchases-ajax' %}",
-                method: "GET",
-                success: function(response) {
-                    // Update the total purchases count in the DOM
-                    $('#total-purchases').text(`Total purchases: ${response.total_purchases}`);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error fetching total purchases:", error);
-                }
-            });
+            fetch("{% url 'total-purchases-dynamic' %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('total-purchases').textContent = `Total purchases: ${data.total_purchases}`;
+            })
+            .catch(error => console.error("Error fetching total purchases:", error));
         }
 
         // Set an interval to update the total purchases every 5 seconds

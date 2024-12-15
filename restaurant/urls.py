@@ -40,6 +40,6 @@ urlpatterns = [
     path('ingredients/csv/', views.IngredientCSVView.as_view(), name='ingredient-csv'),
     path('chart/', views.chart, name='chart'),
 
-    # AJAX URLs
-    path('ajax/total-purchases/', views.total_purchases_ajax, name='total-purchases-ajax'),
+    # Dynamic URLs
+    path('dynamic/total-purchases/', views.total_purchases_dynamic, name='total-purchases-dynamic'),
 ]

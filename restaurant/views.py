@@ -349,7 +349,7 @@ class PurchaseCreateView(LoginRequiredMixin, FormView):
         return super().form_invalid(form)
     
 
-def total_purchases_ajax(request):
+def total_purchases_dynamic(request):
     total_purchases = Purchase.objects.count()
     return JsonResponse({'total_purchases': total_purchases})
 # ----------------------------

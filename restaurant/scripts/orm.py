@@ -2,7 +2,7 @@ from contextlib import contextmanager
 
 from django.db import connection
 
-from restaurant.models import Ingredient, MenuItem, RecipeRequirement, Purchase
+from restaurant.models import Ingredient, MenuItem, Purchase, RecipeRequirement
 
 """
 Django ORM Script

@@ -42,6 +42,12 @@ def home(request):
             "btn_text": "Go to Menu Items"
         },
         {
+            "title": "Recipes",
+            "description": "Review all your recipes.",
+            "url_name": "menu-with-ingredients",
+            "btn_text": "Go to Recipes"
+        },
+        {
             "title": "Purchases",
             "description": "Track your purchases and inventory in one place. Stay on top of your stock.",
             "url_name": "purchase-list",
@@ -273,6 +279,12 @@ class RecipeRequirementDeleteView(LoginRequiredMixin, SuccessMessageMixin, Delet
     context_object_name = 'obj'
     success_url = reverse_lazy('menu-item-list')
     success_message = "Item was deleted successfully!" 
+
+def menu_with_ingredients_view(request):
+    menu_items = MenuItem.objects.prefetch_related(
+        'ingredients', 'reciperequirement_set'
+    )  # Prefetch ingredients and recipe requirements
+    return render(request, 'restaurant/menu_with_ingredients.html', {'menu_items': menu_items})
 
 # ----------------------------
 # Purchase Views

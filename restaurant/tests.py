@@ -165,7 +165,7 @@ class IngredientCSVViewTest(TestCase):
         self.assertIn("Flour", csv_content)
         self.assertIn("Sugar", csv_content)
 
-class TotalPurchasesAjaxTest(TestCase):
+class TotalPurchasesDynamicTest(TestCase):
 
     def setUp(self):
         # Create a sample menu item and purchases
@@ -173,9 +173,9 @@ class TotalPurchasesAjaxTest(TestCase):
         Purchase.objects.create(menu_item=self.burger)
         Purchase.objects.create(menu_item=self.burger)
 
-    def test_total_purchases_ajax(self):
-        # Simulate an AJAX GET request to the endpoint
-        url = reverse('total-purchases-ajax')  # Replace with your URL name
+    def test_total_purchases_dynamic(self):
+        # Simulate an dynamic GET request to the endpoint
+        url = reverse('total-purchases-dynamic')
         response = self.client.get(url)
 
         # Assert that the response is successful

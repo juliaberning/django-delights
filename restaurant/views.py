@@ -109,8 +109,16 @@ class IngredientListView(LoginRequiredMixin, ListView):
     template_name = 'restaurant/ingredient_list.html'
     context_object_name = 'ingredients'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(name__icontains=search_query)
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
         context['inventory_value'] = sum(
             [ingredient.price_per_unit * ingredient.quantity for ingredient in self.object_list]
         )

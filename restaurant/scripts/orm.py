@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 
-from django.db import connection
+from django.db import connection, transaction
+from django.db.models import F, Sum
 
 from restaurant.models import Ingredient, MenuItem, Purchase, RecipeRequirement
 
@@ -9,14 +10,8 @@ Django ORM Script
 
 Purpose:
 This script demonstrates the use of Django's ORM to interact with a database.
-Optionally, it outputs the raw SQL queries executed during these operations for debugging and performance analysis.
-
-Usage:
-    -Set LOGGING_ENABLED to True to log queries.
-    -Run this script using Django Extensions' `runscript` command:
-        python manage.py runscript orm_script
+Each section highlights a specific query operation or relationship.
 """
-
 
 @contextmanager
 def log_queries(label):
@@ -32,183 +27,134 @@ def log_queries(label):
         print(f"Time: {query['time']}")
     print("----------------------------------------------------")
 
+
 def run():
     global LOGGING_ENABLED
-    LOGGING_ENABLED = True  
+    LOGGING_ENABLED = True
 
-    """Query primary key of ingredient"""
+    # SECTION 1: Queries with the Primary Key
+    print("\n### Queries with the Primary Key ###")
+    with log_queries("Create Ingredient"):
+        ingredient = Ingredient.objects.create(name="Tomato", price_per_unit=0.5, quantity=100)
+        print(f"Created Ingredient: {ingredient.name}, ID: {ingredient.id}")
 
-    with log_queries("Create ingredient with .save()"):
-        ingredient = Ingredient(name='Tomato', price_per_unit=0.5, quantity=1000)
+    with log_queries("Fetch Ingredient by ID"):
+        ingredient = Ingredient.objects.get(pk=ingredient.id)
+        print(f"Fetched Ingredient: {ingredient.name}, Quantity: {ingredient.quantity}")
+
+    with log_queries("Update Ingredient"):
+        ingredient.quantity = 150
         ingredient.save()
-        print(f"Created ingredient with .save() - Output: {ingredient.name}")
+        print(f"Updated Quantity: {ingredient.quantity}")
 
-    with log_queries("Delete ingredient with .delete()"):
+    with log_queries("Delete Ingredient"):
         ingredient.delete()
-        print(f"Deleted ingredient with .delete() - Output: {ingredient.name}")
+        print("Ingredient Deleted")
 
-    with log_queries("Create ingredient with .create()"):
-        ingredient = Ingredient.objects.create(name='Onion', price_per_unit=0.3, quantity=500)
-        print(f"Created ingredient with .create() - Output: {ingredient.name}")
+    # SECTION 2: Queries with a Foreign Key Relationship
+    print("\n### Queries with a Foreign Key Relationship ###")
+    with log_queries("Create MenuItem and Link Ingredients"):
+        burger = MenuItem.objects.create(name="Burger", price=5.0)
+        tomato = Ingredient.objects.create(name="Tomato", price_per_unit=0.5, quantity=100)
+        lettuce = Ingredient.objects.create(name="Lettuce", price_per_unit=0.3, quantity=50)
+        cheese = Ingredient.objects.create(name="Cheese", price_per_unit=2.0, quantity=20)
+        
+        RecipeRequirement.objects.create(menu_item=burger, ingredient=tomato, quantity=2)
+        RecipeRequirement.objects.create(menu_item=burger, ingredient=lettuce, quantity=1)
+        RecipeRequirement.objects.create(menu_item=burger, ingredient=cheese, quantity=0.5)
+        print(f"Linked Ingredients to MenuItem: {burger.name}")
 
-    with log_queries("Remove duplicate ingredients"):
-        ingredients = Ingredient.objects.filter(name='Onion').order_by('-quantity')[1:]
-        for duplicate in ingredients:
-            duplicate.delete()
-            print(f"Deleted duplicate ingredient - Output: {duplicate.name}")
+    # SECTION 3: Reversed Queries of a Foreign Key Relationship
+    print("\n### Reversed Queries of a Foreign Key Relationship ###")
+    with log_queries("Fetch MenuItems that use Tomato"):
+        tomato_related_items = tomato.menuitem_set.all()
+        for item in tomato_related_items:
+            print(f"MenuItem Using Tomato: {item.name}")
 
-    with log_queries("Fetch single Tomato ingredient"):
-        ingredient = Ingredient.objects.get(name='Tomato')
-        print(f"Amount of units - Output: {ingredient.name}: {ingredient.quantity}")
-
-    with log_queries("Count Tomato instances"):
-        tomatoes = Ingredient.objects.filter(name='Tomato')
-        print(f"Number of tomato instances - Output: {tomatoes.count()}")
-
-    with log_queries("Update quantity of Tomato"):
-        ingredient.quantity = 800
-        ingredient.save()
-        print(f"Updated quantity -Output: Updated {ingredient.name} to {ingredient.quantity} units")
-
-    with log_queries("Fetch first ingredient"):
-        ingredient = Ingredient.objects.first()
-        print(f"First ingredient - Output: {ingredient.name}")
-
-    with log_queries("Fetch third ingredient by position"):
-        ingredient = Ingredient.objects.all()[2]
-        print(f"Third ingredient - Output: {ingredient.name}")
-
-    with log_queries("Fetch last three ingredients"):
-        ingredients = Ingredient.objects.all().order_by('-id')[:3]
-        print("Last three ingredients - Output:")
-        for ingredient in ingredients:
-            print(ingredient.name)
-
-    with log_queries("Fetch all ingredients"):
-        ingredients = Ingredient.objects.all()
-        print("Ingredients - Output:")
-        for ingredient in ingredients:
-            print(f"{ingredient.name}: {ingredient.quantity} units")
-
-    with log_queries("Fetch ingredients with quantity < 5"):
-        ingredients = Ingredient.objects.filter(quantity__lt=5)
-        ingredients_count = ingredients.count()
-        print("Ingredients with quantity less than 5 - Output:")
-        for ingredient in ingredients:
-            print(f"{ingredient.name}: {ingredient.quantity} units")
-        print(f"Number of ingredients with quantity < 5 - Output: {ingredients_count}")
-
-    with log_queries("Count ingredients"):
-        ingredients_count = Ingredient.objects.count()
-        print(f"Number of ingredients - Output: {ingredients_count}")
-
-    """
-    Make queries with related models
-    """
-
-    with log_queries("Create or get ingredients - Tomato"):
-        tomato, created = Ingredient.objects.get_or_create(
-            name="Tomato",
-            defaults={"price_per_unit": 0.5, "quantity": 100}
-        )
-        if created:
-            print(f"Created new ingredient: {tomato.name}")
-        else:
-            print(f"Ingredient already exists: {tomato.name}")
-
-    with log_queries("Create or get ingredients - Cheese"):
-        cheese, created = Ingredient.objects.get_or_create(
-            name="Cheese",
-            defaults={"price_per_unit": 2.0, "quantity": 50}
-        )
-        if created:
-            print(f"Created new ingredient: {cheese.name}")
-        else:
-            print(f"Ingredient already exists: {cheese.name}")
-
-    with log_queries("Create or get ingredients - Lettuce"):
-        lettuce, created = Ingredient.objects.get_or_create(
-            name="Lettuce",
-            defaults={"price_per_unit": 0.3, "quantity": 75}
-        )
-        if created:
-            print(f"Created new ingredient: {lettuce.name}")
-        else:
-            print(f"Ingredient already exists: {lettuce.name}")
-
-    with log_queries("Create or get menu item - Burger"):
-        burger, created = MenuItem.objects.get_or_create(
-            name="Burger",
-            defaults={"price": 5.0}
-        )
-        if created:
-            print(f"Created new menu item: {burger.name}")
-        else:
-            print(f"Menu item already exists: {burger.name}")
-
-    with log_queries("Link ingredient to menu item - Tomato"):
-        recipe, created = RecipeRequirement.objects.get_or_create(
-            menu_item=burger,
-            ingredient=tomato,
-            defaults={"quantity": 2.0}
-        )
-        if created:
-            print(f"Created recipe requirement: {recipe.ingredient.name} for {recipe.menu_item.name}")
-        else:
-            print(f"Recipe requirement already exists: {recipe.ingredient.name} for {recipe.menu_item.name}")
-
-    with log_queries("Link ingredient to menu item - Cheese"):
-        recipe, created = RecipeRequirement.objects.get_or_create(
-            menu_item=burger,
-            ingredient=cheese,
-            defaults={"quantity": 1.0}
-        )
-        if created:
-            print(f"Created recipe requirement: {recipe.ingredient.name} for {recipe.menu_item.name}")
-        else:
-            print(f"Recipe requirement already exists: {recipe.ingredient.name} for {recipe.menu_item.name}")
-
-    with log_queries("Link ingredient to menu item - Lettuce"):
-        recipe, created = RecipeRequirement.objects.get_or_create(
-            menu_item=burger,
-            ingredient=lettuce,
-            defaults={"quantity": 0.5}
-        )
-        if created:
-            print(f"Created recipe requirement: {recipe.ingredient.name} for {recipe.menu_item.name}")
-        else:
-            print(f"Recipe requirement already exists: {recipe.ingredient.name} for {recipe.menu_item.name}")
-
-    with log_queries("Fetch all ingredients required for Burger"):
-        burger_ingredients = burger.ingredients.all()
-        for ingredient in burger_ingredients:
-            print(f"{ingredient.name} is required for {burger.name}")
-
-    with log_queries("Fetch all RecipeRequirement entries for Burger"):
-        burger_requirements = RecipeRequirement.objects.filter(menu_item=burger)
-        print("Recipe requirements for the Burger menu item:")
-        for req in burger_requirements:
-            print(f"{req.quantity} of {req.ingredient.name} is required for {req.menu_item.name}")
-
-    with log_queries("Find all menu items that require Tomato"):
-        menu_items_with_tomato = MenuItem.objects.filter(ingredients__name="Tomato")
-        for item in menu_items_with_tomato:
-            print(f"{item.name} uses Tomato")
-
-    with log_queries("Record a purchase of Burger"):
+    with log_queries("Fetch Purchases of Burger"):
         purchase = Purchase.objects.create(menu_item=burger)
-        print("Purchase recorded:", purchase)
+        for purchase in burger.purchase_set.all():
+            print(f"Burger Purchased at: {purchase.timestamp}")
 
-    with log_queries("Reduce stock of ingredients for Burger"):
+    # SECTION 4: Queries with a Join Table
+    print("\n### Queries with a Join Table ###")
+    with log_queries("Fetch RecipeRequirements for Burger"):
         burger_requirements = RecipeRequirement.objects.filter(menu_item=burger)
         for req in burger_requirements:
-            req.ingredient.quantity -= req.quantity  # Deduct the required amount
+            print(f"{req.quantity} {req.ingredient.name} required for {burger.name}")
+
+    # SECTION 5: Filters
+    print("\n### Filters ###")
+    with log_queries("Filter Ingredients with Quantity < 50"):
+        low_stock_ingredients = Ingredient.objects.filter(quantity__lt=50)
+        for ingredient in low_stock_ingredients:
+            print(f"Low Stock: {ingredient.name} ({ingredient.quantity} units)")
+
+    with log_queries("Exclude Ingredients with Name 'Tomato'"):
+        other_ingredients = Ingredient.objects.exclude(name="Tomato")
+        for ingredient in other_ingredients:
+            print(f"Ingredient: {ingredient.name}")
+
+
+    # SECTION 6: Aggregates
+    print("\n### Aggregates ###")
+    with log_queries("Count All Ingredients"):
+        ingredient_count = Ingredient.objects.count()
+        print(f"Total Ingredients: {ingredient_count}")
+
+    with log_queries("Sum of All Ingredient Quantities"):
+        total_quantity = Ingredient.objects.aggregate(total=Sum('quantity'))['total']
+        print(f"Total Quantity of Ingredients: {total_quantity}")
+
+    print("\n### Ordering Results ###")
+    with log_queries("Order Ingredients by Name (Ascending)"):
+        ordered_ingredients = Ingredient.objects.order_by("name")
+        for ingredient in ordered_ingredients:
+            print(f"Ingredient: {ingredient.name} (Quantity: {ingredient.quantity})")
+
+    with log_queries("Order Ingredients by Quantity (Descending)"):
+        ordered_ingredients = Ingredient.objects.order_by("-quantity")
+        for ingredient in ordered_ingredients:
+            print(f"Ingredient: {ingredient.name} (Quantity: {ingredient.quantity})")
+
+    # SECTION 7: Calculations
+    print("\n### Calculations ###")
+    with log_queries("Reduce Stock for Burger Purchase"):
+        requirements = RecipeRequirement.objects.filter(menu_item=burger)
+        for req in requirements:
+            req.ingredient.quantity -= req.quantity
             req.ingredient.save()
+            print(f"Updated Stock: {req.ingredient.name} ({req.ingredient.quantity} units remaining)")
 
-    with log_queries("Print updated ingredient quantities"):
-        for ingredient in burger.ingredients.all():
-            print(f"{ingredient.name}: {ingredient.quantity} units remaining")
+    with log_queries("Fetch Ingredients with Derived Field"):
+        ingredients = Ingredient.objects.annotate(total_cost=F("quantity") * F("price_per_unit"))
+        for ingredient in ingredients:
+            print(f"{ingredient.name}: Total Cost = {ingredient.total_cost}")
 
+    with log_queries("Complex Query with Joins, Filters, Annotations, Aggregation, and Ordering"):
+        # Complex Query
+        results = (
+            RecipeRequirement.objects
+            .select_related("menu_item", "ingredient")  # Optimizes JOINs
+            .filter(
+                menu_item__name="Burger",         # Filter by related model field
+                ingredient__quantity__gte=10,    # Filter by ingredient stock
+            )
+            .annotate(
+                total_cost=F("ingredient__price_per_unit") * F("quantity"),  # Annotation for cost
+            )
+            .values(
+                "menu_item__name",               # Only return specific fields
+                "ingredient__name",
+                "quantity",
+                "total_cost",
+            )
+            .order_by("-total_cost")             # Order by calculated field
+            .aggregate(
+                total_ingredient_cost=Sum("total_cost")  # Aggregation for total cost
+            )
+        )
 
-    # with log_queries("Delete Burger and its recipe requirements"):
-    #     burger.delete()
+        # Output Results
+        print("Complex Query Result:")
+        print(f"Total Ingredient Cost: {results['total_ingredient_cost']}")

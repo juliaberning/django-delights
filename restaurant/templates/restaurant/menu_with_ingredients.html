@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Recipes{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">Recipes</h1>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
         {% for menu_item in menu_items %}
             <div class="col d-flex align-items-stretch">
                 <div class="card border-primary text-center h-100" style="width: 20rem">

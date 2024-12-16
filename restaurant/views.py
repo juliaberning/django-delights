@@ -1,6 +1,7 @@
 import csv
 
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -283,7 +284,7 @@ class RecipeRequirementDeleteView(LoginRequiredMixin, SuccessMessageMixin, Delet
     success_url = reverse_lazy('menu-item-list')
     success_message = "Item was deleted successfully!" 
 
-@login_required(login_url='login')
+@staff_member_required
 def menu_with_ingredients_view(request):
     menu_items = MenuItem.objects.prefetch_related(
         'ingredients', 'reciperequirement_set'

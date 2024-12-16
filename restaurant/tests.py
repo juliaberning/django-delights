@@ -91,7 +91,7 @@ class PurchaseTests(TestCase):
 class InventoryAndRevenueTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='testuser', password='password')
+        self.user = User.objects.create_user(username='testuser', password='password', is_staff=True)
         self.client.login(username='testuser', password='password')
         self.ingredient = Ingredient.objects.create(name='Cheese', price_per_unit=1.5, quantity=1000)
         self.menu_item = MenuItem.objects.create(name='Burger', price=8.0)
@@ -99,12 +99,14 @@ class InventoryAndRevenueTests(TestCase):
     def test_inventory_cost(self):
         response = self.client.get(reverse('ingredient-list'))
         inventory_cost = 1.5 * 1000  # price_per_unit * quantity
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['inventory_value'], inventory_cost)
 
     def test_total_revenue(self):
         Purchase.objects.create(menu_item=self.menu_item)
         response = self.client.get(reverse('purchase-list'))
         total_revenue = 8.0  # One purchase of Burger
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['total_revenue'], total_revenue)
 
 class IngredientPDFViewTest(TestCase):

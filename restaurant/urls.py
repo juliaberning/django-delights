@@ -1,3 +1,4 @@
+from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import path
 
 from . import views
@@ -30,7 +31,7 @@ urlpatterns = [
     path('menu-with-ingredients/', views.menu_with_ingredients_view, name='menu-with-ingredients'),
     
     # Purchase URLs
-    path('purchases/', views.PurchaseListView.as_view(), name='purchase-list'),
+    path('purchases/', staff_member_required(views.PurchaseListView.as_view()), name='purchase-list'),
     path('purchase/new/', views.PurchaseCreateView.as_view(), name='purchase-create'),
 
     # Downloads and analytics

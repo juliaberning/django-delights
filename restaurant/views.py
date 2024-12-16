@@ -1,10 +1,8 @@
-import base64
 import csv
-import io
 
-import matplotlib
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -17,9 +15,6 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import FormView
-
-matplotlib.use('Agg')  # Use a non-GUI backend
-from matplotlib import pyplot as plt
 from reportlab.pdfgen import canvas
 
 from .forms import (IngredientForm, MenuItemForm, PurchaseForm,
@@ -191,7 +186,7 @@ class IngredientPDFView(LoginRequiredMixin, View):
         return response
     
 
-class IngredientCSVView(View):
+class IngredientCSVView(LoginRequiredMixin,View):
     def get(self, request, *args, **kwargs):
         # Create a response object with the correct content type
         response = HttpResponse(content_type='text/csv')
@@ -288,6 +283,7 @@ class RecipeRequirementDeleteView(LoginRequiredMixin, SuccessMessageMixin, Delet
     success_url = reverse_lazy('menu-item-list')
     success_message = "Item was deleted successfully!" 
 
+@login_required(login_url='login')
 def menu_with_ingredients_view(request):
     menu_items = MenuItem.objects.prefetch_related(
         'ingredients', 'reciperequirement_set'
@@ -356,105 +352,84 @@ class PurchaseCreateView(LoginRequiredMixin, FormView):
         messages.error(self.request, "Invalid form submission. Please check the data and try again.", extra_tags='danger')
         return super().form_invalid(form)
     
-
 def total_purchases_dynamic(request):
     total_purchases = Purchase.objects.count()
     return JsonResponse({'total_purchases': total_purchases})
+
 # ----------------------------
 # Analytics View
 # ----------------------------
+@login_required(login_url='login')
+def charts(request):
+    return render(request, 'restaurant/charts.html')
+
+@login_required(login_url='login')
+def quantity_chart(request):
+    labels = []
+    data = []
+
+    queryset = (
+        RecipeRequirement.objects.values('ingredient__name')
+        .annotate(total_quantity=Sum('quantity'))
+        .order_by('-total_quantity')
+    )
+
+    for entry in queryset:
+        labels.append(entry['ingredient__name'])
+        data.append(entry['total_quantity'])
 
 
-def generate_chart(chart_function):
-    """Helper function to generate a base64 chart."""
-    buf = io.BytesIO()
-    chart_function()  # Call the provided chart function to plot the data
-    plt.tight_layout()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    string = base64.b64encode(buf.read()).decode('utf-8')
-    buf.close()
-    plt.close()  # Close the plot to avoid overlaps
-    return string
+    response_data = {
+        'labels': labels,
+        'data': data,
+        'chartTitle': 'Ingredient Usage Chart',
+        'legend': 'Total Quantity', 
+        'chartType': 'bar', 
+    }
 
+    return JsonResponse(data=response_data)
 
-def chart(request):
-    def generate_chart(chart_function):
-        """Helper function to generate a base64 chart."""
-        buf = io.BytesIO()
-        chart_function()
-        plt.tight_layout()
-        plt.savefig(buf, format='png')
-        buf.seek(0)
-        string = base64.b64encode(buf.read()).decode('utf-8')
-        buf.close()
-        plt.close()
-        return string
+@login_required(login_url='login')
+def revenue_chart(request):
+    labels = []
+    data = []
 
-    def revenue_chart():
-        menu_items = MenuItem.objects.all()
-        names = [item.name for item in menu_items]
-        revenues = [
-            item.price * Purchase.objects.filter(menu_item=item).count()
-            for item in menu_items
-        ]
-        plt.bar(names, revenues, color='skyblue')
-        plt.title("Revenue by Menu Item")
-        plt.xlabel("Menu Item")
-        plt.ylabel("Revenue ($)")
-        plt.xticks(rotation=45)
+    menu_items = MenuItem.objects.all()
+    names = [item.name for item in menu_items]
+    revenues = [
+        item.price * Purchase.objects.filter(menu_item=item).count()
+        for item in menu_items
+    ]   
 
-    def ingredient_usage_chart():
-        ingredients = Ingredient.objects.all()
-        labels = [ingredient.name for ingredient in ingredients]
-        quantities = [
-            RecipeRequirement.objects.filter(ingredient=ingredient).aggregate(
-                total=Sum('quantity')
-            )['total'] or 0
-            for ingredient in ingredients
-        ]
-        plt.pie(quantities, labels=labels, autopct='%1.1f%%', startangle=140)
-        plt.title("Ingredient Usage Distribution")
+    labels = names
+    data = revenues
 
-    def menu_popularity_chart():
-        purchases = Purchase.objects.all().order_by('timestamp')
-        dates = sorted(set(purchase.timestamp.date() for purchase in purchases))
-        menu_items = MenuItem.objects.all()
-        for item in menu_items:
-            counts = [
-                Purchase.objects.filter(menu_item=item, timestamp__date=date).count()
-                for date in dates
-            ]
-            plt.plot(dates, counts, marker='o', label=item.name)
-        plt.title("Menu Popularity Over Time")
-        plt.xlabel("Date")
-        plt.ylabel("Number of Purchases")
-        plt.legend()
-        plt.grid()
+    response_data = {
+        'labels': labels,
+        'data': data,
+        'chartTitle': 'Menu Item revenue Chart',
+        'legend': 'Total Quantity', 
+        'chartType': 'bar', 
+    }
 
-    def inventory_chart():
-        ingredients = Ingredient.objects.all()
-        labels = [ingredient.name for ingredient in ingredients]
-        remaining = [ingredient.quantity for ingredient in ingredients]
-        used = [
-            RecipeRequirement.objects.filter(ingredient=ingredient).aggregate(
-                total=Sum('quantity')
-            )['total'] or 0
-            for ingredient in ingredients
-        ]
-        x = range(len(labels))
-        plt.barh(x, remaining, color='green', label='Remaining')
-        plt.barh(x, used, color='red', label='Used', left=remaining)
-        plt.yticks(x, labels)
-        plt.xlabel("Quantity")
-        plt.title("Ingredient Inventory Overview")
-        plt.legend()
+    return JsonResponse(data=response_data)
 
-    charts = [
-        {"title": "Revenue by Menu Item", "data": generate_chart(revenue_chart)},
-        {"title": "Ingredient Usage Distribution", "data": generate_chart(ingredient_usage_chart)},
-        {"title": "Menu Popularity Over Time", "data": generate_chart(menu_popularity_chart)},
-        {"title": "Ingredient Inventory Overview", "data": generate_chart(inventory_chart)},
-    ]
+@login_required(login_url='login')
+def inventory_chart(request):
+    labels = []
+    data = []
 
-    return render(request, 'restaurant/chart.html', {"charts": charts})
+    ingredients = Ingredient.objects.all()
+    
+    labels = [ingredient.name for ingredient in ingredients]
+    data = [ingredient.quantity for ingredient in ingredients]
+
+    response_data = {
+        'labels': labels,
+        'data': data,
+        'chartTitle': 'Inventory quantity Chart',
+        'legend': 'Total Quantity', 
+        'chartType': 'bar', 
+    }
+
+    return JsonResponse(data=response_data)

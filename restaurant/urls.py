@@ -16,8 +16,6 @@ urlpatterns = [
     path('ingredient/<int:pk>/update/', views.IngredientUpdateView.as_view(), name='ingredient-update'),
     path('ingredient/<int:pk>/delete/', views.IngredientDeleteView.as_view(), name='ingredient-delete'),
 
- 
-
     # MenuItem URLs
     path('menu-items/', views.MenuItemListView.as_view(), name='menu-item-list'),
     path('menu-item/new/', views.MenuItemCreateView.as_view(), name='menu-item-create'),
@@ -38,7 +36,10 @@ urlpatterns = [
     # Downloads and analytics
     path('ingredients/pdf/', views.IngredientPDFView.as_view(), name='ingredient-pdf'),
     path('ingredients/csv/', views.IngredientCSVView.as_view(), name='ingredient-csv'),
-    path('chart/', views.chart, name='chart'),
+    path('charts', views.charts, name='charts'),
+    path('quantity-chart/', views.quantity_chart, name='quantity-chart'),
+    path('revenue-chart/', views.revenue_chart, name='revenue-chart'),
+    path('inventory-chart/', views.inventory_chart, name='inventory-chart'),
 
     # Dynamic URLs
     path('dynamic/total-purchases/', views.total_purchases_dynamic, name='total-purchases-dynamic'),

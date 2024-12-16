@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">Welcome to Django Delights!</h1>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-2">
+      <div class="col d-flex align-items-stretch">
+          <div class="card border-primary text-center h-100">
+              <div class="card-body d-flex flex-column justify-content-between">
+                  <canvas id="quantity-chart" data-url="{% url 'quantity-chart' %}" style="height: 400px;"></canvas>
+              </div>
+          </div>
+      </div>
+      <div class="col d-flex align-items-stretch">
+          <div class="card border-primary text-center h-100">
+              <div class="card-body d-flex flex-column justify-content-between">
+                  <canvas id="revenue-chart" data-url="{% url 'revenue-chart' %}" style="height: 400px;"></canvas>
+              </div>
+          </div>
+      </div>
+      <div class="col d-flex align-items-stretch">
+          <div class="card border-primary text-center h-100">
+              <div class="card-body d-flex flex-column justify-content-between">
+                  <canvas id="inventory-chart" data-url="{% url 'inventory-chart' %}" style="height: 400px;"></canvas>
+              </div>
+          </div>
+      </div>
+  </div>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Function to initialize a chart dynamically
+    function initializeChart(canvasId) {
+        const $chart = $("#" + canvasId);
+        const url = $chart.data("url");
+
+        $.ajax({
+            url: url,
+            success: function (data) {
+                const ctx = $chart[0].getContext("2d");
+                new Chart(ctx, {
+                    type: data.chartType,  // Dynamically set chart type
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: data.legend,  // Dynamically set legend
+                            backgroundColor: data.backgroundColor || 'rgba(54, 162, 235, 0.5)',
+                            borderColor: data.borderColor || 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            data: data.data
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: data.chartTitle }
+                        },
+                    }
+                });
+            }
+        });
+    }
+
+    // Initialize charts for each canvas
+    $(function () {
+        initializeChart("quantity-chart");
+        initializeChart("revenue-chart");
+        initializeChart("inventory-chart");
+    });
+</script>
+
+{% endblock %}
